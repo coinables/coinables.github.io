@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html, body{
+  background-color: #003366;
+  color: #fff;
+  font-family: "Calibri", Arial, Sans-Serif;
+}
+a{
+  color: #ccc;
+  font-weight: bold;
+}
+button{
+  background-color: #003366;
+  border: 2px solid #fff;
+  padding 3px;
+  color: #fff;
+}
+.post{
+  padding: 10px;
+  margin: 2px;
+  border: 1px solid #fff;
+  border-radius: 3px;
+}
+#htgtcbp{
+  display: none;
+}
+</style>
+</head>
+<body>
+<h1>
+Beginner Bitcoin Web Tutorials
+</h1>
+<h2>
+by coinables
+</h2>
+<div class="post">
+<h3>How to Get the Current Bitcoin Price</h3>
+<button class="htgtcbp_btn">View</button>
+</div>
+<div id="htgtcbp">
+PHP is a server-side scripting language. This means that the code is processed by the web server before it is displayed to the user. It is very powerful and is used from small website contact forms to running large social networking websites. JSON is a format for how information is displayed and interpreted. It stands for Java-Script Object Notation. It uses curly braces, commas, quotes, brackets, etc to divide information and make it easily used by scripting languages like PHP. <br><br>This is an example of some basic JSON taken from Bitfinex:<br><pre class="prettyprint">{"mid":"262.035","bid":"261.84","ask":"262.23",<br/>"last_price":"261.77","timestamp":"1425255995.013169392"}</pre><br><br>This is an example of some JSON with more parameters taken from <a href="https://blockchain.info">blockchain.info</a>:<br><pre class="prettyprint" id="block1">{	"hash160":"354649cca48f11597f53d5144b69bc651eb41c7e",<br/>	"address":"15rh1tAsR2vj3yULB1rmMDQjsJ3j3pjjDm",<br/>	"n_tx":2,<br/>	"total_received":1559028,<br/>	"total_sent":1559028,<br/>	"final_balance":0,<br/>	"txs":[{   <br/>"lock_time":0, <br/>  "result":0, <br/>  "ver":1, <br/>  "size":192, <br/>  "inputs":[      {  <br/>       "sequence":4294967295,  <br/>       "prev_out":{ <br/>           "spent":true,  <br/>          "tx_index":79258139,  <br/>          "type":0,<br/>            "addr":"15rh1tAsR2vj3yULB1rmMDQjsJ3j3pjjDm", <br/>           "value":1559028,<br/>            "n":0,   <br/>         "script":"76a914354649cca48f11597f53d5144b69bc651eb41c7e88ac" <br/>        },</pre><br><br>As you can see there is a lot of data you can get from a JSON output. Keep in mind the last example from <a href="https://blockchain.info">blockchain.info</a> is only a small portion of a much larger JSON file. The text inside quotes are identifiers or tags and the data that follows is its value. If I asked for "total_received" the value returned would be <span id="addr">1559028</span>. If asked for "ask" from the first example with bitfinex, the value returned would be <span id="addr">262.23</span>.<br><br>Let's start with some basic coding. I assume if you are here you have some grasp on working with websites. Whether you are a wizard or novice, I will be going step-by-step. My editor program of choice is Notepad++. You can use whichever editor you like, but you will need one.<br><br><div class="wmsg">In order to execute PHP code you will need to run you files on a PHP server.<br> Most web hosting providers today run PHP at no additional charge.</div><br>Open up your editor, create a new blank file, and let's insert our PHP tags. PHP tags are simply a less-than symbol, followed by a question mark, followed by the letters "P", "H", "P". This will open your PHP tags. To close them is with a question mark followed by a greater-than symbol. Anything written in between the open and close tags will be interpreted as PHP code. <br><img src="http://btcthreads.com/images/l3_ss.jpg"><br><br> In PHP in order to display text onto the webpage use the command <span id="addr">echo</span>. Anything written  inside the quotes after an echo will be input onto the screen. For example if you wanted to display the phrase  <span id="addr">Write on the screen!</span> You would use the below code: <br> <img src="http://btcthreads.com/images/l3_ss2.jpg"><br><br> Boring, right? Ok let's get the latest price from Bitfinex and display it on the screen. Bitfinex has  public JSON available at <span id="addr">https://api.bitfinex.com/v1/ticker/btcusd</span>. Please respect  public JSON links and don't not bombard them with 100's of requests per second. Most of them have limits  of how often you can hit them within a certain time frame and if you exceed your IP will be banned. Let's open up our PHP tags and within our tags write in this code:<br><pre class="prettyprint" id="block1">$url = "https://api.bitfinex.com/v1/ticker/btcusd";<br/>$json = json_decode(file_get_contents($url), true);<br/>$price = $json["last_price"];<br/>echo $price;</pre><br>If you save this file as a php file and run it, it should display the latest price at Bitfinex. Let's break down this code. The words with <span id="addr">$</span> in front of them are variables. Just like in algebra a variable is just a placeholder that can equal anything.<br><br> <span id="addr">$url</span> is being used to define where our JSON string is located on the internet. <br> <span id="addr">$json</span> is using two PHP functions one is json_decode which tells PHP to read this information in JSON format. The other is file_get_contents which tells PHP you have to go here to get the data. Did you notice we input <span id="addr">$url</span> right after the file_get_contents? We were telling it to go the previous variable we defined which was Bitfinex's website. <br> <span id="addr">$price</span> is calling the <span id="addr">$json</span> variable and then specifying which info from the JSON we want. In this case it is the last price <span id="addr">$json["last_price"]</span>. <br> At the end we display the price on the webpage with <span id="addr">echo $price;</span><br><br>You can use this same code with just a few tweaks to get the price from other exchanges. <br><br><b>BTC-e</b><br><pre class="prettyprint" id="block1">$url = "https://btc-e.com/api/2/btc_usd/ticker";<br/>$json = json_decode(file_get_contents($url), true);<br/>$price = $json["ticker"]["last"];<br/>echo $price;</pre><br><b>Bitstamp</b><br><pre class="prettyprint" id="block1">$url = "https://www.bitstamp.net/api/ticker/";<br/>$json = json_decode(file_get_contents($url), true);<br/>$price = $json["last"];<br/>echo $price;</pre><br><b>Coinbase</b><br><pre class="prettyprint" id="block1">$url = "https://coinbase.com/api/v1/prices/spot_rate";<br/>$json = json_decode(file_get_contents($url), true);<br/>$price = $json["amount"];<br/>echo $price;</pre><br><br>Pretty cool, huh? Well that does it for Lesson#3. In our next lesson we will dig in to more in-depth JSON with <a href="https://blockchain.info">blockchain.info</a>. <br><br>
+</div>
+<div class="post">
+<h3>Create a Bitcoin USD Converter</h3>
+</div>
+<div class="post">
+<h3>Build a Basic Bitcoin Mining Calculator</h3>
+</div>
+</body>
+<script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+<script>
+$('.htgtcbp_btn').click(function() {
+    $('#htgtcbp').toggle('slow');
+});
+</script>
+</html>
