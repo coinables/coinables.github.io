@@ -8,7 +8,7 @@ html, body{
   font-family: "Calibri", Arial, Sans-Serif;
 }
 a{
-  color: #ccc;
+  color: #666;
   font-weight: bold;
 }
 button{
@@ -25,7 +25,38 @@ button{
 }
 #htgtcbp{
   display: none;
+  width: 80%;
+  margin: auto;
+  border: 1px solid #000;
+  background-color: #fff;
+  color: #1e1e1e;
+  padding: 5px;
+  font-size: 17px;
 }
+#cabuc{
+  display: none;
+  width: 80%;
+  margin: auto;
+  border: 1px solid #000;
+  background-color: #fff;
+  color: #1e1e1e;
+  padding: 5px;
+  font-size: 17px;
+}
+#sltwws{
+  display: none;
+  width: 80%;
+  margin: auto;
+  border: 1px solid #000;
+  background-color: #fff;
+  color: #1e1e1e;
+  padding: 5px;
+  font-size: 17px;
+}
+#messages{
+   overflow: hidden;
+   height: 270px;
+    }
 </style>
 </head>
 <body>
@@ -33,26 +64,185 @@ button{
 Beginner Bitcoin Web Tutorials
 </h1>
 <h2>
-by coinables
+by <a href="https://twitter.com/coinableS">coinables<img src="https://g.twimg.com/dev/documentation/image/DTC_Services_1h_hero_bg.png" width="20"></a>
 </h2>
+I have created some introductory bitcoin web tutorials for beginners mainly focusing on JavaScript. <br><br>
+    
 <div class="post">
 <h3>How to Get the Current Bitcoin Price</h3>
+    Have you ever wondered how some websites display the live bitcoin exchange rate? If so, that is what this tutorial is going to show you how to do.<br>
 <button class="htgtcbp_btn">View</button>
 </div>
-<div id="htgtcbp">
-PHP is a server-side scripting language. This means that the code is processed by the web server before it is displayed to the user. It is very powerful and is used from small website contact forms to running large social networking websites. JSON is a format for how information is displayed and interpreted. It stands for Java-Script Object Notation. It uses curly braces, commas, quotes, brackets, etc to divide information and make it easily used by scripting languages like PHP. <br><br>This is an example of some basic JSON taken from Bitfinex:<br><pre class="prettyprint">{"mid":"262.035","bid":"261.84","ask":"262.23",<br/>"last_price":"261.77","timestamp":"1425255995.013169392"}</pre><br><br>This is an example of some JSON with more parameters taken from <a href="https://blockchain.info">blockchain.info</a>:<br><pre class="prettyprint" id="block1">{	"hash160":"354649cca48f11597f53d5144b69bc651eb41c7e",<br/>	"address":"15rh1tAsR2vj3yULB1rmMDQjsJ3j3pjjDm",<br/>	"n_tx":2,<br/>	"total_received":1559028,<br/>	"total_sent":1559028,<br/>	"final_balance":0,<br/>	"txs":[{   <br/>"lock_time":0, <br/>  "result":0, <br/>  "ver":1, <br/>  "size":192, <br/>  "inputs":[      {  <br/>       "sequence":4294967295,  <br/>       "prev_out":{ <br/>           "spent":true,  <br/>          "tx_index":79258139,  <br/>          "type":0,<br/>            "addr":"15rh1tAsR2vj3yULB1rmMDQjsJ3j3pjjDm", <br/>           "value":1559028,<br/>            "n":0,   <br/>         "script":"76a914354649cca48f11597f53d5144b69bc651eb41c7e88ac" <br/>        },</pre><br><br>As you can see there is a lot of data you can get from a JSON output. Keep in mind the last example from <a href="https://blockchain.info">blockchain.info</a> is only a small portion of a much larger JSON file. The text inside quotes are identifiers or tags and the data that follows is its value. If I asked for "total_received" the value returned would be <span id="addr">1559028</span>. If asked for "ask" from the first example with bitfinex, the value returned would be <span id="addr">262.23</span>.<br><br>Let's start with some basic coding. I assume if you are here you have some grasp on working with websites. Whether you are a wizard or novice, I will be going step-by-step. My editor program of choice is Notepad++. You can use whichever editor you like, but you will need one.<br><br><div class="wmsg">In order to execute PHP code you will need to run you files on a PHP server.<br> Most web hosting providers today run PHP at no additional charge.</div><br>Open up your editor, create a new blank file, and let's insert our PHP tags. PHP tags are simply a less-than symbol, followed by a question mark, followed by the letters "P", "H", "P". This will open your PHP tags. To close them is with a question mark followed by a greater-than symbol. Anything written in between the open and close tags will be interpreted as PHP code. <br><img src="http://btcthreads.com/images/l3_ss.jpg"><br><br> In PHP in order to display text onto the webpage use the command <span id="addr">echo</span>. Anything written  inside the quotes after an echo will be input onto the screen. For example if you wanted to display the phrase  <span id="addr">Write on the screen!</span> You would use the below code: <br> <img src="http://btcthreads.com/images/l3_ss2.jpg"><br><br> Boring, right? Ok let's get the latest price from Bitfinex and display it on the screen. Bitfinex has  public JSON available at <span id="addr">https://api.bitfinex.com/v1/ticker/btcusd</span>. Please respect  public JSON links and don't not bombard them with 100's of requests per second. Most of them have limits  of how often you can hit them within a certain time frame and if you exceed your IP will be banned. Let's open up our PHP tags and within our tags write in this code:<br><pre class="prettyprint" id="block1">$url = "https://api.bitfinex.com/v1/ticker/btcusd";<br/>$json = json_decode(file_get_contents($url), true);<br/>$price = $json["last_price"];<br/>echo $price;</pre><br>If you save this file as a php file and run it, it should display the latest price at Bitfinex. Let's break down this code. The words with <span id="addr">$</span> in front of them are variables. Just like in algebra a variable is just a placeholder that can equal anything.<br><br> <span id="addr">$url</span> is being used to define where our JSON string is located on the internet. <br> <span id="addr">$json</span> is using two PHP functions one is json_decode which tells PHP to read this information in JSON format. The other is file_get_contents which tells PHP you have to go here to get the data. Did you notice we input <span id="addr">$url</span> right after the file_get_contents? We were telling it to go the previous variable we defined which was Bitfinex's website. <br> <span id="addr">$price</span> is calling the <span id="addr">$json</span> variable and then specifying which info from the JSON we want. In this case it is the last price <span id="addr">$json["last_price"]</span>. <br> At the end we display the price on the webpage with <span id="addr">echo $price;</span><br><br>You can use this same code with just a few tweaks to get the price from other exchanges. <br><br><b>BTC-e</b><br><pre class="prettyprint" id="block1">$url = "https://btc-e.com/api/2/btc_usd/ticker";<br/>$json = json_decode(file_get_contents($url), true);<br/>$price = $json["ticker"]["last"];<br/>echo $price;</pre><br><b>Bitstamp</b><br><pre class="prettyprint" id="block1">$url = "https://www.bitstamp.net/api/ticker/";<br/>$json = json_decode(file_get_contents($url), true);<br/>$price = $json["last"];<br/>echo $price;</pre><br><b>Coinbase</b><br><pre class="prettyprint" id="block1">$url = "https://coinbase.com/api/v1/prices/spot_rate";<br/>$json = json_decode(file_get_contents($url), true);<br/>$price = $json["amount"];<br/>echo $price;</pre><br><br>Pretty cool, huh? Well that does it for Lesson#3. In our next lesson we will dig in to more in-depth JSON with <a href="https://blockchain.info">blockchain.info</a>. <br><br>
+<div id="htgtcbp">Have you ever wondered how some websites display the live bitcoin exchange rate? If so, that is what this tutorial is going to show you how to do. <br><br>
+The secret is API. Bitcoin exchanges provide APIs which are open feeds that pump out information to the internet. Some exchanges even offer trading API so that users can buy and sell bitcoins with programs they write, commonly referred to as trading bots. <br><br>
+<em>Cool bro, so how do I API?</em> <br>Like this:<br><br>
+<b>Find the API feed: </b> Here's a good one: <a href="https://api.bitcoinaverage.com/ticker/global/USD/" target="_blank">https://api.bitcoinaverage.com/ticker/global/USD/</a>    <br>
+    <textarea rows="3" cols="85">{
+  "24h_avg": 446.59,
+  "ask": 446.53,
+  "bid": 445.83,
+  "last": 446.29,
+  "timestamp": "Sun, 22 May 2016 03:44:28 -0000",
+  "volume_btc": 23795.48,
+  "volume_percent": 72.73
+}</textarea>
+    <br><br>
+<b>Review the JSON: </b> What you are seeing is the live rate averaged across multiple exchanges in JSON format. The current price is under the "last" category, meaning the last price bitcoin was traded at. <br><br>
+<b>Pull the JSON with Javascript: </b> Create a new file and use javascript to get the last price from the URL. 
+    <textarea rows="10" cols="85">
+        var xbtc = new XMLHttpRequest();
+        xbtc.open('GET', 'https://api.bitcoinaverage.com/ticker/global/USD/', true);
+        xbtc.onreadystatechange = function(){
+	    if(xbtc.readyState == 4){
+		var ticker = JSON.parse(xbtc.responseText);
+		var price = ticker.last;
+		document.getElementById('btc').innerHTML = "$" + price;
+        }
+        };
+        xbtc.send();</textarea><br><br>
+    <b>Output:</b><br><div id="btc"></div>
 </div>
 <div class="post">
 <h3>Create a Bitcoin USD Converter</h3>
+    Now that you know how to get the latest price we can create a bitcoin to USD conversion tool. <br>
+ <button class="cabuc_btn">View</button>   
+</div>
+<div id="cabuc">  
+Now that you know how to get the latest price we can create a bitcoin to USD conversion tool.<br><br>
+<b>Create the inputs: </b>Start by making two input boxes that launch a javascript funtion when someone types or makes a change. <br>
+<textarea rows="2" cols="85">
+BTC: &lt;input type="text" id="btcc" onchange="btcConvert();" onkeyup="btcConvert();"&gt;&lt;br&gt;
+USD:&lt;input type="text" id="usdc" onchange="usdConvert();" onkeyup="usdConvert();"&gt;&lt;br&gt;
+</textarea> <br><br>
+<b>Write the functions: </b>First adjust the existing javascript from our last lesson to make the variable "price" global by removing the var.<br>
+Line 6: <strike>var</strike> price = ticker.last;    
+    <br><br> Create a function that fetches the users input from the bitcoin input and multiply it by the current price. Limit the result to 2 decimal places and output it to the USD input box.<br>
+<textarea rows="5" cols="85">
+function btcConvert(){
+ var amount = document.getElementById("btcc").value;
+ var btcCalc = amount * price;
+ var btcCalc = btcCalc.toFixed(2);
+ document.getElementById("usdc").value = btcCalc;
+};
+</textarea><br><br>
+Now do the opposite to fetch the user input from the USD box, and then divide it by the price. Limit the result to 8 decimal palces and output it to the BTC input box. <br>
+<textarea rows="5" cols="85">
+function usdConvert(){
+ var usd = document.getElementById("usdc").value;
+ var usdCalc =  usd / price;
+ var usdCalc = usdCalc.toFixed(8);
+ document.getElementById("btcc").value = usdCalc;
+}
+</textarea> <br><br> 
+<b>Output:</b><br>
+BTC: <input type="text" id="btcc" onchange="btcConvert();" onkeyup="btcConvert();"><br>
+USD:<input type="text" id="usdc" onchange="usdConvert();" onkeyup="usdConvert();"><br>
 </div>
 <div class="post">
-<h3>Build a Basic Bitcoin Mining Calculator</h3>
+<h3>Stream Live Transactions with WebSocket</h3>
+Learn to use the websocket protocol. Transmit lots of data while using little bandwidth. <br>
+<button class="sltwws_btn">View</button> 
 </div>
+<div id="sltwws">
+Websockets allow lots a data throughput while using very littl bandwidth. In this lesson we will use blockchain.info websocket to stream 
+    live bitcoin transactions. <br><br>First of all let's put in our script tags <span id="addr">&lt;script&gt;&lt;&#47;script&gt;</span> and then we'll establish a connection to our websocket using <span id="addr">new WebSocket&#40;&#41;</span>.<br> 
+
+<pre class="prettyprint">
+
+var btcs = new WebSocket('wss://ws.blockchain.info/inv');
+
+</pre><br>So we started by creating the variable <span id="addr">var btcs</span> and then we had that be equal to the new websocket connection. Now that we have a connection to the websocket we need to send it a message and tell blockchain.info which information we are interested in receiving. We are going to use the <span id="addr">onopen</span> and <span id="addr">send</span> API commands to do this. Let's call the previous variable <span id="addr">var btcs</span> and create a function that subscribes us to <span id="addr">&#123;"op":"unconfirmed_sub"&#125;</span> which is new transactions to the bitcoin network.<br>
+
+<pre class="prettyprint">
+btcs.onopen = function(){
+	btcs.send(JSON.stringify({"op":"unconfirmed_sub"}));
+	};
+</pre>
+
+<br><span id="addr">JSON.stringify</span> will send a JSON request to the websocket server telling it that we want to receive updates on new transactions to the network. At this point the server will start sending "messages" to the client everytime there is a new transaction. We need to tell javascript what to do everytime a message is received using the <span id="addr">onmessage</span> command. Create a new function using <span id="addr">onmessage</span> and I'm going to name the function onmsg. Within that function we will parse the JSON using the <span id="addr">data</span> command.<br>
+
+<pre class="prettyprint">
+btcs.onmessage = function(onmsg){
+	var response = JSON.parse(onmsg.data);
+	console.log(response);
+	}
+
+</pre><br>At this point you could stick this script into an HTML document and when you run it, it will start shooting out all the new transactions as objects in JSON format into your browsers debug/console. If you look at it you'll notice they all start with <span id="addr">utx</span> and then all the transaction data is under <span id="addr">x</span>. The data within the <span id="addr">x</span> array includes <span id="addr">input</span> and <span id="addr">out</span> or sender and receiver. If we want info form the input area we would call the <span id="addr">response</span> variable and then add in <span id="addr">.x.input</span>. However there can be multiple inputs and outs so we have to clarify which one. If we add in stright brackets and put a zero &#91;0&#93;that will get us information on the first item in the array. Here's an example that will get the BTC amount that was received by the first output.<br>
+
+<pre class="prettyprint">
+btcs.onmessage = function(onmsg){
+	var response = JSON.parse(onmsg.data);
+	var amount = response.x.out[0].value;
+	var calAmount = amount / 100000000;
+	console.log(calAmount);
+	}
+</pre>
+
+<br>You'll notice I also added in a calculation to divide the result by 100 million to get the value in bitcoins since the data is provided in satohis. Since it's still just going to the debug/console that's not very helpful to the user, let's add in some jquery to have this info output on the page. You can either install jquery to your server or just use a link to grab the min.js from jquery.com <span id="addr">http://code.jquery.com/jquery-1.11.0.min.js</span>.<br><br>
+
+Within the onmessage function I'm going to start with <span id="addr">$&#40;'#messages'&#41;</span> which tells jquery to look for the element in the HTML that has the ID of "messages". Since I don't have one yet I'll add some HTML and create a div with the ID "messages". Now I'll tell jquery to prepend &#40;add to the top&#41; each new amount within a p tag. The completed code will look like this<br>
+<pre class="prettyprint">
+&lt;html&gt;
+&lt;script src="http://code.jquery.com/jquery-1.11.0.min.js"&gt;&lt;&#47;script&gt;
+
+&lt;script&gt;
+var btcs = new WebSocket('wss://ws.blockchain.info/inv');
+
+btcs.onopen = function()
+	{
+	btcs.send( JSON.stringify( {"op":"unconfirmed_sub"} ) );
+	};
+
+btcs.onmessage = function(onmsg)
+	{
+	var response = JSON.parse(onmsg.data);
+	var amount = response.x.out[0].value;
+	var calAmount = amount &#47; 100000000;
+	$('#messages').prepend("&lt;p&gt;" + calAmount + "&lt;&#47;p&gt;");
+	}
+
+&lt;&#47;script&gt;
+&lt;body&gt;
+&lt;div id="messages"&gt;&lt;&#47;div&gt;
+&lt;&#47;body&gt;
+&lt;&#47;html&gt;
+</pre><br>
+<b>Output:</b><br>
+<div id="messages"></div>
+<script>
+var btcs = new WebSocket('wss://ws.blockchain.info/inv');
+
+btcs.onopen = function()
+	{
+	btcs.send( JSON.stringify( {"op":"unconfirmed_sub"} ) );
+	};
+
+btcs.onmessage = function(onmsg)
+	{
+	var response = JSON.parse(onmsg.data);
+	var amount = response.x.out[0].value;
+	var calAmount = amount / 100000000;
+	$('#messages').prepend("<p>" + calAmount + "</p>");
+	}
+
+</script><br>
+</div>
+    <br><center>Want more tutorials? <br>
+    These are created in my free time. Everyone's time should be valuable, so please consider donating.<br>
+    Donate: <a href="https://blockchain.info/address/1NPrfWgJfkANmd1jt88A141PjhiarT8d9U" target="_blank">1NPrfWgJfkANmd1jt88A141PjhiarT8d9U</a> <br>
+    </center>
 </body>
 <script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+    <script src="js/price.js"></script>
 <script>
 $('.htgtcbp_btn').click(function() {
     $('#htgtcbp').toggle('slow');
 });
+$('.cabuc_btn').click(function() {
+    $('#cabuc').toggle('slow');
+});  
+$('.sltwws_btn').click(function() {
+    $('#sltwws').toggle('slow');
+});      
 </script>
 </html>
