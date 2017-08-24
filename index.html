@@ -62,6 +62,10 @@ button{
    height: 270px;
     }
 </style>
+    <script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
 </head>
 <body>
 <h1>
@@ -82,31 +86,54 @@ I have created some introductory bitcoin web tutorials for beginners mainly focu
 <div id="htgtcbp">Have you ever wondered how some websites display the live bitcoin exchange rate? If so, that is what this tutorial is going to show you how to do. <br><br>
 The secret is API. Bitcoin exchanges provide APIs which are open feeds that pump out information to the internet. Some exchanges even offer trading API so that users can buy and sell bitcoins with programs they write, commonly referred to as trading bots. <br><br>
 <em>Cool bro, so how do I API?</em> <br>Like this:<br><br>
-<b>Find the API feed: </b> Here's a good one: <a href="https://api.bitcoinaverage.com/ticker/global/USD/" target="_blank">https://api.bitcoinaverage.com/ticker/global/USD/</a>    <br>
+<b>Find the API feed: </b> Here's a good one: <a href="https://www.bitstamp.net/api/ticker/" target="_blank">https://www.bitstamp.net/api/ticker/</a>    <br>
     <textarea rows="3" cols="85">{
-  "24h_avg": 446.59,
-  "ask": 446.53,
-  "bid": 445.83,
-  "last": 446.29,
-  "timestamp": "Sun, 22 May 2016 03:44:28 -0000",
-  "volume_btc": 23795.48,
-  "volume_percent": 72.73
+high: "4248.97",
+last: "4121.99",
+timestamp: "1503554064",
+bid: "4113.76",
+vwap: "4149.66",
+volume: "15496.71417909",
+low: "4059.50",
+ask: "4121.99",
+open: 4121.78
 }</textarea>
     <br><br>
-<b>Review the JSON: </b> What you are seeing is the live rate averaged across multiple exchanges in JSON format. The current price is under the "last" category, meaning the last price bitcoin was traded at. <br><br>
+<b>Review the JSON: </b> What you are seeing is the live rate on the Bitstamp exchange in JSON format. The current price is under the "last" category, meaning the last price bitcoin was traded at. <br><br>
 <b>Pull the JSON with Javascript: </b> Create a new file and use javascript to get the last price from the URL. 
     <textarea rows="10" cols="85">
-        var xbtc = new XMLHttpRequest();
-        xbtc.open('GET', 'https://api.bitcoinaverage.com/ticker/global/USD/', true);
-        xbtc.onreadystatechange = function(){
-	    if(xbtc.readyState == 4){
-		var ticker = JSON.parse(xbtc.responseText);
-		var price = ticker.last;
-		document.getElementById('btc').innerHTML = "$" + price;
-        }
-        };
-        xbtc.send();</textarea><br><br>
+        &lt;html&gt;
+        //require jquery
+        &lt;script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"&gt;&lt;/script&gt;
+
+        &lt;div id="btc"&gt;&lt;/div&gt;
+        
+        &lt;script&gt;
+        $.ajax({
+        async: true,
+        type: "GET",
+        url: "https://www.bitstamp.net/api/ticker/",
+        success: function(result) {
+          data = result.last;
+          document.getElementById("btc").innerHTML = data;
+          }
+        });
+        &lt;/script&gt;
+        &lt;/html&gt;
+        </textarea><br><br>
     <b>Output:</b><br><div id="btc"></div>
+    <script>
+    $.ajax({
+        async: true,
+        type: "GET",
+        url: "https://www.bitstamp.net/api/ticker/",
+        success: function(result){
+            data = result.last;
+            document.getElementById("btc").innerHTML = data;
+        }
+    });
+        
+    </script>
     <br>
     Lesson Source Code: <a href="https://github.com/coinables/Get-Bitcoin-Price-with-JavaScript" target="_blank">https://github.com/coinables/Get-Bitcoin-Price-with-JavaScript</a>
 </div>
@@ -242,7 +269,6 @@ btcs.onmessage = function(onmsg)
     Donate: <a href="https://blockchain.info/address/1NPrfWgJfkANmd1jt88A141PjhiarT8d9U" target="_blank">1NPrfWgJfkANmd1jt88A141PjhiarT8d9U</a> <br>
     </center>
 </body>
-<script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
     <script src="js/price.js"></script>
 <script>
 $('.htgtcbp_btn').click(function() {
