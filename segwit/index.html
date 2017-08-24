@@ -68,6 +68,7 @@
     <div id="sweepcont">
     <input type="password" class="form-control input-lg" placeholder="SegWit Private Key" id="wifprivatekey"><br>
     <input type="text" class="form-control input-lg" placeholder="Destination Address" id="toaddress"><br>
+        <textarea id="inputdata" cols="100" rows="7"></textarea>
     <input type="number" class="form-control input-lg" id="satperbyte"> <small>Miner Fee Satoshis Per Byte</small><br><br>
     <button class="btn btn-default" id="sweepkey">TRANSFER ALL FUNDS</button><br>
     </div>
@@ -150,10 +151,12 @@
             }
     }  
       
-     function sweepKey() {
-     var NETWORK = bitcoin.networks.bitcoin;
-     var API_DOMAIN = "https://api.smartbit.com.au";
-     var EXPLORER_DOMAIN = "https://www.smartbit.com.au";
+function sweepKey() {
+     var DOUBLE_TX = false
+     var NETWORK = bitcoin.networks.bitcoin
+     var API_DOMAIN = "https://api.smartbit.com.au"
+     var EXPLORER_DOMAIN = "https://www.smartbit.com.au"
+     var Buffer = null
    
      var WIF = $("#wifprivatekey").val();
       
@@ -167,7 +170,16 @@
         alert("Please Enter Address to send to!");
         return;
       }; 
-      var P2SHAddress = wif2address(WIF);
+    
+      var keyPair = bitcoin.ECPair.fromWIF(WIF, NETWORK);
+      var pubKey = keyPair.getPublicKeyBuffer();
+      var pubKeyHash = bitcoin.crypto.hash160(pubKey);
+      var redeemScript = bitcoin.script.witnessPubKeyHash.output.encode(pubKeyHash);
+      var redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
+      var scriptPubKey = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
+      var P2SHAddress = bitcoin.address.fromOutputScript(scriptPubKey, NETWORK);
+   
+     console.log(P2SHAddress);
       var data
       $.ajax({
         async: true,
@@ -182,22 +194,51 @@
               "satoshis": item.value_int
             }
           })
-          $("#inputdata").val(JSON.stringify(data, null, 2));
+          $("#inputdata").val(JSON.stringify(data, null, 2))
         }
       });
          
-      var keyPair = bitcoin.ECPair.fromWIF(WIF, NETWORK);
-      var inputData = $("#inputdata").val();   
-      var satPerByte = $("#satperbyte").val();
-      
-      if (satPerByte == "") {
-        alert("Please enter Satoshi Per Byte Fee Rate!");
-        return;
+      try {
+        var keyPair = bitcoin.ECPair.fromWIF(WIF, NETWORK)
+      } catch (e) {
+        alert('Invalid WIF private key.')
+        return
       }
-         
-      satPerByte = parseFloat(satPerByte);
-      var pubKey = keyPair.getPublicKeyBuffer();
-      var pubKeyHash = bitcoin.crypto.hash160(pubKey);
+      var inputData = $("#inputdata").val()
+      if (inputData == "") {
+        alert("Fetching UTXOs click again to finalize and sweep.")
+        return
+      }
+      inputData = JSON.parse(inputData)
+      var toAddressBox = $("#toaddress").val().split(',')
+      var toAddress = toAddressBox[0]
+      var ooishiMessage = toAddressBox[1]
+      if (toAddress == "") {
+        alert("Please Enter Address to send to!")
+        return
+      } else {
+        try {
+          var toAddressObj = bitcoin.address.fromBase58Check(toAddress)
+        } catch(e) {
+          alert("To Address was not a valid Bitcoin address!")
+          return
+        }
+      }
+      if (ooishiMessage) {
+        ooishiMessage = bitcoin.script.nullData.output.encode(Buffer.from(ooishiMessage, 'utf8'))
+        if (ooishiMessage.length > 80) {
+          alert("メッセージが長すぎます。全角25文字〜半角77文字までです。\n全角1文字＝半角3文字という計算です。")
+          return
+        }
+      }
+      var satPerByte = $("#satperbyte").val()
+      if (satPerByte == "") {
+        alert("Please enter Satoshi Per Byte Fee Rate!")
+        return
+      }
+      satPerByte = parseFloat(satPerByte)
+      var pubKey = keyPair.getPublicKeyBuffer()
+      var pubKeyHash = bitcoin.crypto.hash160(pubKey)
       var redeemScript = bitcoin.script.witnessPubKeyHash.output.encode(pubKeyHash)
       var redeemScriptHash = bitcoin.crypto.hash160(redeemScript)
       var scriptPubKey = bitcoin.script.scriptHash.output.encode(redeemScriptHash)
@@ -212,18 +253,71 @@
       var estimatedFeeSatoshis = Math.ceil(estimatedByteCount * satPerByte)
       var totalSatoshis = inputData.reduce(function(total, item){return total += item.satoshis}, 0)
       var totalSatoshisMinusFee = totalSatoshis - estimatedFeeSatoshis
-      if (NETWORK.pubKeyHash == toAddressObj.version) {
+      if (DOUBLE_TX) {
+        if (NETWORK.scriptHash == toAddressObj.version) {
+          alert("Can't double Transaction to P2SH, please send to P2PKH")
+          return
+        }
+        var sendToScriptPubkey = redeemScript
+      } else if (NETWORK.pubKeyHash == toAddressObj.version) {
         var sendToScriptPubkey = bitcoin.script.pubKeyHash.output.encode(toAddressObj.hash)
       } else if (NETWORK.scriptHash == toAddressObj.version) {
         var sendToScriptPubkey = bitcoin.script.scriptHash.output.encode(toAddressObj.hash)
       }
-      txb.addOutput(sendToScriptPubkey, totalSatoshisMinusFee);
+      txb.addOutput(sendToScriptPubkey,
+                    totalSatoshisMinusFee)
+      if (!DOUBLE_TX && !!ooishiMessage) txb.addOutput(ooishiMessage, 0)
       for (var i = 0; i < inputData.length; i++) {
-        txb.sign(i, keyPair, redeemScript, null, inputData[i].satoshis);
+        txb.sign(i, keyPair, redeemScript, null, inputData[i].satoshis)
       }
-      var tx = txb.build();
-      var tx_txid = tx.getId();
-      var tx_raw = tx.toHex();
+      var tx = txb.build()
+      var tx_txid = tx.getId()
+      var tx_raw = tx.toHex()
+      if (DOUBLE_TX) {
+        var secondTxInput = {
+          txid: tx_txid,
+          vout: 0,
+          satoshis: totalSatoshisMinusFee
+        }
+        var txb2 = new bitcoin.TransactionBuilder(NETWORK)
+        var sendAmountMinusFees = secondTxInput.satoshis - Math.ceil(142 * satPerByte)
+        if (secondTxInput.satoshis - Math.ceil(142 * satPerByte) < 0) {
+          alert('Not enough funds to pay for Double TX fees.')
+          return
+        }
+        if (parseInt(sendAmountMinusFees / 2) < 546) {
+          alert('Not enough funds to pay for Double TX fees. Would create dust.')
+          return
+        }
+        txb2.addInput(secondTxInput.txid,
+                      secondTxInput.vout,
+                      0xffffffff,
+                      redeemScript)
+        txb2.tx.ins[0].prevOutType = bitcoin.script.types.P2WPKH
+        txb2.addOutput(sendToScriptPubkey,
+                      parseInt(sendAmountMinusFees / 2))
+        txb2.addOutput(sendToScriptPubkey,
+                      parseInt(sendAmountMinusFees / 2))
+        if (!!ooishiMessage) txb2.addOutput(ooishiMessage, 0)
+        txb2.sign(0, keyPair, null, null, secondTxInput.satoshis)
+        var tx2 = txb2.build()
+        var tx2_txid = tx2.getId()
+        var tx2_raw = tx2.toHex()
+        console.log()
+        setTimeout(function(){
+          $.ajax({
+            async: true,
+            type: "POST",
+            url: API_DOMAIN + "/v1/blockchain/pushtx",
+            contentType: 'application/json',
+            dataType: "json",
+            data: JSON.stringify({hex: tx2_raw}),
+            success: function(result) {
+              console.log("Transaction #2 sent!");
+            }
+          });
+        },1500)
+      }
       $.ajax({
         async: true,
         type: "POST",
@@ -239,9 +333,16 @@
         "Transaction ID:<br><a href=\"" + EXPLORER_DOMAIN + "/tx/" + tx_txid + "\" target=\"_blank\">" +
         tx_txid + "</a><br>" +
         "Raw Transaction:<br><textarea cols=\"150\" rows=\"10\">" +
-        tx_raw + "</textarea>"
-      );
+        tx_raw + "</textarea>" +
+        (!DOUBLE_TX ? "" : "<br><br>Transaction #2 ID: (Raw Segwit inputs and outputs)<br><a href=\"" + EXPLORER_DOMAIN + "/tx/" + tx2_txid + "\" target=\"_blank\">" +
+        tx2_txid + "</a><br>" +
+        "Raw Transaction:<br><textarea cols=\"150\" rows=\"10\">" +
+        tx2_raw + "</textarea>")
+      );    
+      
 }
+      
+
          
 function getByteCountSegwitP2SH(inputCount,outputCount,isMultisig,m,n) {
   var inputSize = isMultisig ? ((73 * m) + (34 * n) + 6 + (76 * 4)) : 108 + (64 * 4)
@@ -254,6 +355,7 @@ function getByteCountSegwitP2SH(inputCount,outputCount,isMultisig,m,n) {
     
 $(document).ready( function() {
       $("#sweepkey").on('click', sweepKey);
+      Buffer = bitcoin.script.compile([]).constructor;
       $.ajax({
         async: true,
         type: "GET",
