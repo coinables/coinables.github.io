@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
     
 <head>
@@ -60,7 +61,7 @@
     Amount to Generate: <br>
     <input type="number" id="bulknum"><br>
     <button id="btnBulk" onClick="return bulkAddress();" class="btn btn-default">Bulk Generate</button><br>
-    <div id="websocketfeed"></div>
+    
     <br>
     <div id="bulkkeys"></div><br>
     
@@ -86,6 +87,8 @@
  <script type="text/javascript" src="js/qrcode.js"></script>
   
   <script>
+//functions used below are from github repo: https://github.com/bip32JP/bip32JP.github.io/tree/master/segwit  
+//https://bip32jp.github.io/segwit
   function generateNewKeyPair(){
       var NETWORK = bitcoin.networks.bitcoin;
       var wif = bitcoin.ECPair.makeRandom({network: NETWORK}).toWIF();
@@ -117,24 +120,6 @@
         document.getElementById("qrcodepk").innerHTML = "";
         new QRCode(document.getElementById("qrcodepk"), pkey);
         
-        var btcs = new WebSocket('wss://ws.blockchain.info/inv');
-
-        btcs.onopen = function()
-            {
-            btcs.send( JSON.stringify( {"op":"addr_sub", "addr":swaddr} ) );
-            };
-
-        btcs.onmessage = function(onmsg)
-            {
-            var response = JSON.parse(onmsg.data);
-            var amount = response.x.out[0].value;
-            var calAmount = amount / 100000000;
-            $('#websocketfeed').prepend("<center><p> Incoming Funds: " + calAmount + " BTC</p></center>");
-            }
-        
-    }
-      
-    
       
     function bulkAddress(){
         var keynum = document.getElementById("bulknum").value;
