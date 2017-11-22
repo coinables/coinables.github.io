@@ -1,24 +1,33 @@
-var xbtc = new XMLHttpRequest();
-xbtc.open('GET', 'https://api.bitcoinaverage.com/ticker/global/USD/', true);
-xbtc.onreadystatechange = function(){
-	if(xbtc.readyState == 4){
-		var ticker = JSON.parse(xbtc.responseText);
-		price = ticker.last;
-		document.getElementById('btc').innerHTML = "$" + price;
-	}
-};
-xbtc.send();
+function fetchPrice(cb){
+	$.ajax({
+		async: true,
+		type: "GET",
+		url: "https://www.bitstamp.net/api/ticker/",
+		success: function(result) {
+		  data = result.last;
+		  cb(data);
+		  }
+	});
+}
+
+fetchPrice(function(lastprice){
+    document.getElementById("usdc").value = lastprice; 
+});
 
 function btcConvert(){
  var amount = document.getElementById("btcc").value;
- var btcCalc = amount * price;
- var btcCalc = btcCalc.toFixed(2);
- document.getElementById("usdc").value = btcCalc;
+ fetchPrice(function(lastprice){
+    var btcCalc = amount * lastprice;
+    var btcCalc = btcCalc.toFixed(2);
+    document.getElementById("usdc").value = btcCalc; 
+ });
 };
 
 function usdConvert(){
  var usd = document.getElementById("usdc").value;
- var usdCalc =  usd / price;
- var usdCalc = usdCalc.toFixed(8);
- document.getElementById("btcc").value = usdCalc;
+ fetchPrice(function(lastprice){
+    var usdCalc =  usd / lastprice;
+    var usdCalc = usdCalc.toFixed(8);
+    document.getElementById("btcc").value = usdCalc;
+ });
 }

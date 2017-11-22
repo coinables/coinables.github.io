@@ -37,8 +37,12 @@
   crossorigin="anonymous"></script>
 </head>
 <body>
-  <h1>SegWit Paper Wallet</h1>
-    
+  <h1>SegWit Paper Wallet</h1><br>
+  <div class="alert alert-dismissible alert-info">
+      This site is <strong>Open Source</strong> and runs on just JavaScript and HTML. That means you can <a href="https://github.com/coinables/coinables.github.io/tree/master/segwit">download it</a> and run it on your own machine. This allows you to generate SegWit addresses offline, only the sweep feature requires an internet connection. 
+  </div>    
+  <div class="well">This is a simple bitcoin paper wallet generator that utilizes Segregated Witness (SegWit) Pay To Witness Public Key Hash (P2WPKH) addresses and transactions. This repo uses the <a href="https://github.com/bitcoinjs/bitcoinjs-lib"><span class="label label-success">BitcoinJS</span></a> library and is HEAVILY based on BIP32JP's SegWit repo (<a href="https://github.com/bip32JP/bip32JP.github.io/tree/master/segwit">https://github.com/bip32JP/bip32JP.github.io/tree/master/segwit</a>).</div> 
+    <br>
     <button onClick="return btnCreate();" class="btn btn-default">New SegWit Address</button><br>
     
     <table width="100%">
@@ -64,7 +68,7 @@
     <button id="btnBulk" onClick="return bulkAddress();" class="btn btn-default">Bulk Generate</button><br>
     
     <br>
-    <div id="bulkkeys"></div><br>
+    <div id="bulkkeys" class="well well-lg"></div><br>
     
     <h3>Sweep SegWit Private Key</h3>
     <div id="sweepcont">
@@ -84,11 +88,7 @@
     
     <div id="vanityOut"></div>
     <br><br>
-    <div class="alert alert-dismissible alert-info">
-  <button type="button" class="close" data-dismiss="alert">&times;</button>
-  This site is <strong>Open Source</strong> and runs on just JavaScript and HTML. That means you can download it and run it on your own machine. This allows you to generate addresses offline, only the sweep feature requires an internet connection. 
-</div>
-    <br><br>
+    
     <a href="https://bitcoincore.org/en/segwit_adoption/"><span class="label label-default"><span id="wit">SEG</span>WIT</span></a>
     <a href="https://github.com/coinables/coinables.github.io/tree/master/segwit"><span class="label label-primary">OPEN SOURCE</span></a>
     <a href="https://github.com/bitcoinjs/bitcoinjs-lib"><span class="label label-success">BITCOINJS</span></a>
@@ -129,7 +129,7 @@
         document.getElementById("qrcodepk").innerHTML = "";
         new QRCode(document.getElementById("qrcodepk"), pkey);
     }
-      
+            
     function vanity(){
         //start create new adress loop with a max out at some point
         var maxout = $("#maxattempts").val(); //roughly 50-70 key pairs a second which is very slow but hey this is javascript
