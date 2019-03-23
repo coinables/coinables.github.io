@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body>
+<div id="out">No Data Found</div>
+<script>
+if(localStorage.getItem("last-config")){
+  let lsdata = localStorage.getItem("last-config");
+  document.getElementById("out").innerHTML = lsdata;
+  console.log(lsdata);
+}
+</script>
+</body>
+</html>
