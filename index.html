@@ -1,287 +1,410 @@
 <!DOCTYPE html>
+
 <html>
-<head>
-<title>Building Bitcoin Websites</title>
-<meta name="description" content="Beginner Bitcoin Web Tutorials. Lessons and tutorials on creating bitcoin related websites mainlyl focusing on  JavaScript.">
-<meta name="keywords" content="Bitcoin, Tutorials, Lessons, API, PHP, HTML, Javascript">
     
+<head>
+    <title>SegWit Paper Wallet</title>
+    <meta name="description" content="Create Segregated Witness (SegWit) Addresses in your browser that can be ran offline to create paper wallets or bulk addresses.">
+    <meta name="keywords" content="Bitcoin, SegWit Paper, SegWit Address, P2WPKH generator, P2WPKH wallet, javascript, pay to witness">
+
 <style>
-html, body{
-  background-color: #003366;
-  color: #fff;
-  font-family: "Calibri", Arial, Sans-Serif;
-}
-a{
-  color: #33ccff;
-  font-weight: bold;
-}
-button{
-  background-color: #003366;
-  border: 2px solid #fff;
-  padding 3px;
-  color: #fff;
-}
-.post{
-  padding: 10px;
-  margin: 2px;
-  border: 1px solid #fff;
-  border-radius: 3px;
-}
-#htgtcbp{
-  display: none;
-  width: 80%;
-  margin: auto;
-  border: 1px solid #000;
-  background-color: #fff;
-  color: #1e1e1e;
-  padding: 5px;
-  font-size: 17px;
-}
-#cabuc{
-  display: none;
-  width: 80%;
-  margin: auto;
-  border: 1px solid #000;
-  background-color: #fff;
-  color: #1e1e1e;
-  padding: 5px;
-  font-size: 17px;
-}
-#sltwws{
-  display: none;
-  width: 80%;
-  margin: auto;
-  border: 1px solid #000;
-  background-color: #fff;
-  color: #1e1e1e;
-  padding: 5px;
-  font-size: 17px;
-}
-#messages{
-   overflow: hidden;
-   height: 270px;
+    body, html {
+        padding: 12px;
     }
+    #share{
+        color: green;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    #keep{
+        color: red;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    #sweepcont{
+        width: 60%;
+    }
+    #wit{
+        background-color: black;
+        color: #ffeeff;
+    }
+    
 </style>
-    <script src="js/jquery-3.2.1.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/readable/bootstrap.min.css" rel="stylesheet" integrity="sha384-Li5uVfY2bSkD3WQyiHX8tJd0aMF91rMrQP5aAewFkHkVSTT2TmD2PehZeMmm7aiL" crossorigin="anonymous">
+<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
 </head>
 <body>
-<h1>
-Beginner Bitcoin Web Tutorials
-</h1>
-<h2>
-by <a href="https://twitter.com/coinableS">coinables<img src="https://g.twimg.com/dev/documentation/image/DTC_Services_1h_hero_bg.png" width="20"></a>
-</h2>
-I have created some introductory bitcoin web tutorials for beginners mainly focusing on JavaScript. <br><br>
-	<h3>If you're looking for my book: <a href="https://btcthreads.com/book/">Building Bitcoin Websites</a></h3>
-    <h3>If you're looking for the segwit address generator: <a href="segwit">/segwit</a></h3>
-    
-<div class="post">
-<h3>How to Get the Current Bitcoin Price</h3>
-    Have you ever wondered how some websites display the live bitcoin exchange rate? If so, that is what this tutorial is going to show you how to do.<br>
-<button class="htgtcbp_btn">View</button>
-</div>
-<div id="htgtcbp">Have you ever wondered how some websites display the live bitcoin exchange rate? If so, that is what this tutorial is going to show you how to do. <br><br>
-The secret is API. Bitcoin exchanges provide APIs which are open feeds that pump out information to the internet. Some exchanges even offer trading API so that users can buy and sell bitcoins with programs they write, commonly referred to as trading bots. <br><br>
-<em>Cool bro, so how do I API?</em> <br>Like this:<br><br>
-<b>Find the API feed: </b> Here's a good one: <a href="https://www.bitstamp.net/api/ticker/" target="_blank">https://www.bitstamp.net/api/ticker/</a>    <br>
-    <textarea rows="3" cols="85">{
-high: "4248.97",
-last: "4121.99",
-timestamp: "1503554064",
-bid: "4113.76",
-vwap: "4149.66",
-volume: "15496.71417909",
-low: "4059.50",
-ask: "4121.99",
-open: 4121.78
-}</textarea>
-    <br><br>
-<b>Review the JSON: </b> What you are seeing is the live rate on the Bitstamp exchange in JSON format. The current price is under the "last" category, meaning the last price bitcoin was traded at. <br><br>
-<b>Pull the JSON with Javascript: </b> Create a new file and use javascript to get the last price from the URL. 
-    <textarea rows="10" cols="85">
-        &lt;html&gt;
-        //require jquery
-        &lt;script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"&gt;&lt;/script&gt;
-
-        &lt;div id="btc"&gt;&lt;/div&gt;
-        
-        &lt;script&gt;
-        $.ajax({
-        async: true,
-        type: "GET",
-        url: "https://www.bitstamp.net/api/ticker/",
-        success: function(result) {
-          data = result.last;
-          document.getElementById("btc").innerHTML = data;
-          }
-        });
-        &lt;/script&gt;
-        &lt;/html&gt;
-        </textarea><br><br>
-    <b>Output:</b><br><div id="btc"></div>
-    <script>
-    $.ajax({
-        async: true,
-        type: "GET",
-        url: "https://www.bitstamp.net/api/ticker/",
-        success: function(result){
-            data = result.last;
-            document.getElementById("btc").innerHTML = data;
-        }
-    });
-        
-    </script>
+  <h1>SegWit Paper Wallet</h1><br>
+  <div class="alert alert-dismissible alert-info">
+      This site is <strong>Open Source</strong> and runs on just JavaScript and HTML. That means you can <a href="https://github.com/coinables/coinables.github.io/tree/master/segwit">download it</a> and run it on your own machine. This allows you to generate SegWit addresses offline, only the sweep feature requires an internet connection. 
+  </div>    
+  <div class="well">This is a simple bitcoin paper wallet generator that utilizes Segregated Witness (SegWit) Pay To Witness Public Key Hash (P2WPKH) addresses and transactions. This repo uses the <a href="https://github.com/bitcoinjs/bitcoinjs-lib"><span class="label label-success">BitcoinJS</span></a> library and is HEAVILY based on BIP32JP's SegWit repo (<a href="https://github.com/bip32JP/bip32JP.github.io/tree/master/segwit">https://github.com/bip32JP/bip32JP.github.io/tree/master/segwit</a>).</div> 
     <br>
-    Lesson Source Code: <a href="https://github.com/coinables/Get-Bitcoin-Price-with-JavaScript" target="_blank">https://github.com/coinables/Get-Bitcoin-Price-with-JavaScript</a>
-</div>
-<div class="post">
-<h3>Create a Bitcoin USD Converter</h3>
-    Now that you know how to get the latest price we can create a bitcoin to USD conversion tool. <br>
- <button class="cabuc_btn">View</button>   
-</div>
-<div id="cabuc">  
-Now that you know how to get the latest price we can create a bitcoin to USD conversion tool.<br><br>
-<b>Create the inputs: </b>Start by making two input boxes that launch a javascript funtion when someone types or makes a change. <br>
-<textarea rows="2" cols="85">
-BTC: &lt;input type="text" id="btcc" onchange="btcConvert();" onkeyup="btcConvert();"&gt;&lt;br&gt;
-USD:&lt;input type="text" id="usdc" onchange="usdConvert();" onkeyup="usdConvert();"&gt;&lt;br&gt;
-</textarea> <br><br>
-<b>Write the functions: </b>First adjust the existing javascript from our last lesson to make the variable "price" global by removing the var.<br>
-Line 6: <strike>var</strike> price = ticker.last;    
-    <br><br> Create a function that fetches the users input from the bitcoin input and multiply it by the current price. Limit the result to 2 decimal places and output it to the USD input box.<br>
-<textarea rows="5" cols="85">
-function btcConvert(){
- var amount = document.getElementById("btcc").value;
- var btcCalc = amount * price;
- var btcCalc = btcCalc.toFixed(2);
- document.getElementById("usdc").value = btcCalc;
-};
-</textarea><br><br>
-Now do the opposite to fetch the user input from the USD box, and then divide it by the price. Limit the result to 8 decimal palces and output it to the BTC input box. <br>
-<textarea rows="5" cols="85">
-function usdConvert(){
- var usd = document.getElementById("usdc").value;
- var usdCalc =  usd / price;
- var usdCalc = usdCalc.toFixed(8);
- document.getElementById("btcc").value = usdCalc;
+    <button onClick="return btnCreate();" class="btn btn-default">New SegWit Address</button><br>
+    
+    <table width="100%">
+    <tr>
+        <td width="50%"><span id="share">OK TO SHARE</span></td>
+        <td align="right"><span id="keep">KEEP PRIVATE</span></td>
+    </tr>
+    <tr>
+        <td>
+            <div id="qrcode"></div>
+            <div id="swaddr"></div>
+        </td>
+        <td align="right">
+            <div id="qrcodepk"></div>
+            <div id="swpk"></div>
+        </td>
+    </tr>
+    </table>
+    <br>
+    <h3>Bulk Keys</h3>
+    Amount to Generate: <br>
+    <input type="number" id="bulknum"><br>
+    <button id="btnBulk" onClick="return bulkAddress();" class="btn btn-default">Bulk Generate</button><br>
+    
+    <br>
+    <div id="bulkkeys" class="well well-lg"></div><br>
+    
+    <h3>Sweep SegWit Private Key</h3>
+    <div id="sweepcont">
+    <input type="password" class="form-control input-lg" placeholder="SegWit Private Key" id="wifprivatekey"><br>
+    <input type="text" class="form-control input-lg" placeholder="Destination Address" id="toaddress"><br>
+        <textarea id="inputdata" cols="100" rows="7"></textarea>
+    <input type="number" class="form-control input-lg" id="satperbyte"> <small>Miner Fee Satoshis Per Byte</small><br><br>
+    <button class="btn btn-default" id="sweepkey">TRANSFER ALL FUNDS</button><br>
+    </div>
+    <div id="results"></div>
+    <br><br>
+    <h3>Vanity SegWit Address</h3>
+    <p>NOTE: This is mostly a novelty, it's a very slow generator.</p>
+    <p>Max Attempts: <input type="number" id="maxattempts" value="10000"><small>10,000 attempts will take about 2-3 minutes to generate.</small></p>
+    <p>Phrase to match: <input type="text" id="vanityPhrase" placeholder="btc"> <small>not case sensitive</small></p>
+    <button id="vanityBtn">Start Searching</button>
+    
+    <div id="vanityOut"></div>
+    <br><br>
+    
+    <a href="https://bitcoincore.org/en/segwit_adoption/"><span class="label label-default"><span id="wit">SEG</span>WIT</span></a>
+    <a href="https://github.com/coinables/coinables.github.io/tree/master/segwit"><span class="label label-primary">OPEN SOURCE</span></a>
+    <a href="https://github.com/bitcoinjs/bitcoinjs-lib"><span class="label label-success">BITCOINJS</span></a>
+ <script src="js/bitcoinjs-lib-3.1.1.js"></script>
+ <script type="text/javascript" src="js/qrcode.js"></script>
+  
+  <script>
+//functions used below are from github repo: https://github.com/bip32JP/bip32JP.github.io/tree/master/segwit  
+//https://bip32jp.github.io/segwit
+  function generateNewKeyPair(){
+      var NETWORK = bitcoin.networks.bitcoin;
+      var wif = bitcoin.ECPair.makeRandom({network: NETWORK}).toWIF();
+      //var wif = "KyjcD49goTAdFgYj38gnvpwMa1vzaHLoKfJcDFgGr3fikun5DiqL";
+      var keyPair = bitcoin.ECPair.fromWIF(wif, NETWORK);
+      var pubKey = keyPair.getPublicKeyBuffer();
+      var pubKeyHash = bitcoin.crypto.hash160(pubKey);
+      var redeemScript = bitcoin.script.witnessPubKeyHash.output.encode(pubKeyHash);
+      var redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
+      var scriptPubKey = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
+      var newaddy = bitcoin.address.fromOutputScript(scriptPubKey, NETWORK);
+      return {
+          wifPrivateK: wif,
+          swAddress: newaddy
+      };
+  }
+    function btnCreate(){
+        var keys = generateNewKeyPair();
+        var swaddress = keys.swAddress;
+        var pkey = keys.wifPrivateK;
+        
+        document.getElementById("swaddr").innerHTML = "<br><div class='panel panel-primary'><div class='panel-heading'><h3 class='panel-title'>Segwit Address</h3></div><div class='panel-body'>" + swaddress + "</div></div>";
+        
+        document.getElementById("qrcode").innerHTML = "";
+        new QRCode(document.getElementById("qrcode"), swaddress);
+        
+        document.getElementById("swpk").innerHTML = "<br><div class='panel panel-danger'><div class='panel-heading'><h3 class='panel-title'>Segwit Private Key</h3></div><div class='panel-body'>" + pkey + "</div></div>";
+        
+        document.getElementById("qrcodepk").innerHTML = "";
+        new QRCode(document.getElementById("qrcodepk"), pkey);
+    }
+            
+    function vanity(){
+        //start create new adress loop with a max out at some point
+        var maxout = $("#maxattempts").val(); //roughly 50-70 key pairs a second which is very slow but hey this is javascript
+        var phrase = $("#vanityPhrase").val();
+        console.log(phrase);
+        for(var i = 0; i< maxout; i++){
+            var newkey = generateNewKeyPair();
+            var addr = newkey.swAddress;
+            console.log(addr);
+            var pkey = newkey.wifPrivateK;
+            //get length of phrase
+            var vanityLength = phrase.length;
+            //substring
+            var addressTarget = addr.substr(1,vanityLength);
+            console.log(addressTarget);
+            var regtest = new RegExp(addressTarget, 'i');
+            var comparePhrase = phrase.match(regtest);
+                        
+            if(comparePhrase){
+                document.getElementById("swaddr").innerHTML = "<br><div class='panel panel-primary'><div class='panel-heading'><h3 class='panel-title'>Segwit Address</h3></div><div class='panel-body'>" + addr + "</div></div>";
+        
+                document.getElementById("qrcode").innerHTML = "";
+                new QRCode(document.getElementById("qrcode"), addr);
+
+                document.getElementById("swpk").innerHTML = "<br><div class='panel panel-danger'><div class='panel-heading'><h3 class='panel-title'>Segwit Private Key</h3></div><div class='panel-body'>" + pkey + "</div></div>";
+
+                document.getElementById("qrcodepk").innerHTML = "";
+                new QRCode(document.getElementById("qrcodepk"), pkey);
+                document.body.scrollTop = document.documentElement.scrollTop = 0;
+                
+                break;
+            }
+        }
+    }
+      
+    function bulkAddress(){
+        var keynum = document.getElementById("bulknum").value;
+            if(keynum < 1001){
+                    for(i=0; i < keynum; i++){
+                        var keys = generateNewKeyPair();
+                        var swaddress = keys.swAddress;
+                        var pkey = keys.wifPrivateK;
+                        var visualnum = i +1;
+                        $("#bulkkeys").append("<p>"+ visualnum + ", &quot;"+swaddress+"&quot;, &quot;"+pkey+"&quot;</p>");
+                    }
+            } else {
+                alert("1000 is the max bro");
+            }
+    }  
+      
+function sweepKey() {
+     var DOUBLE_TX = false
+     var NETWORK = bitcoin.networks.bitcoin
+     var API_DOMAIN = "https://api.smartbit.com.au"
+     var EXPLORER_DOMAIN = "https://www.smartbit.com.au"
+     var Buffer = null
+   
+     var WIF = $("#wifprivatekey").val();
+      
+      if (WIF == "") {
+        alert("The WIF Private key must be entered to send!");
+        return;
+      };
+      
+      var toAddress = $("#toaddress").val();
+      if (toAddress == "") {
+        alert("Please Enter Address to send to!");
+        return;
+      }; 
+    
+      var keyPair = bitcoin.ECPair.fromWIF(WIF, NETWORK);
+      var pubKey = keyPair.getPublicKeyBuffer();
+      var pubKeyHash = bitcoin.crypto.hash160(pubKey);
+      var redeemScript = bitcoin.script.witnessPubKeyHash.output.encode(pubKeyHash);
+      var redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
+      var scriptPubKey = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
+      var P2SHAddress = bitcoin.address.fromOutputScript(scriptPubKey, NETWORK);
+   
+     console.log(P2SHAddress);
+      var data
+      $.ajax({
+        async: true,
+        type: "GET",
+        url: API_DOMAIN + "/v1/blockchain/address/" + P2SHAddress + "/unspent",
+        success: function(result) {
+          console.log(result.unspent.length + " utxos found");
+          data = result.unspent.map(function(item){
+            return {
+              "txid": item.txid,
+              "vout": item.n,
+              "satoshis": item.value_int
+            }
+          })
+          $("#inputdata").val(JSON.stringify(data, null, 2))
+        }
+      });
+         
+      try {
+        var keyPair = bitcoin.ECPair.fromWIF(WIF, NETWORK)
+      } catch (e) {
+        alert('Invalid WIF private key.')
+        return
+      }
+      var inputData = $("#inputdata").val()
+      if (inputData == "") {
+        alert("Fetching UTXOs click again to finalize and sweep.")
+        return
+      }
+      inputData = JSON.parse(inputData)
+      var toAddressBox = $("#toaddress").val().split(',')
+      var toAddress = toAddressBox[0]
+      var ooishiMessage = toAddressBox[1]
+      if (toAddress == "") {
+        alert("Please Enter Address to send to!")
+        return
+      } else {
+        try {
+          var toAddressObj = bitcoin.address.fromBase58Check(toAddress)
+        } catch(e) {
+          alert("To Address was not a valid Bitcoin address!")
+          return
+        }
+      }
+      if (ooishiMessage) {
+        ooishiMessage = bitcoin.script.nullData.output.encode(Buffer.from(ooishiMessage, 'utf8'))
+        if (ooishiMessage.length > 80) {
+          alert("メッセージが長すぎます。全角25文字〜半角77文字までです。\n全角1文字＝半角3文字という計算です。")
+          return
+        }
+      }
+      var satPerByte = $("#satperbyte").val()
+      if (satPerByte == "") {
+        alert("Please enter Satoshi Per Byte Fee Rate!")
+        return
+      }
+      satPerByte = parseFloat(satPerByte)
+      var pubKey = keyPair.getPublicKeyBuffer()
+      var pubKeyHash = bitcoin.crypto.hash160(pubKey)
+      var redeemScript = bitcoin.script.witnessPubKeyHash.output.encode(pubKeyHash)
+      var redeemScriptHash = bitcoin.crypto.hash160(redeemScript)
+      var scriptPubKey = bitcoin.script.scriptHash.output.encode(redeemScriptHash)
+      var txb = new bitcoin.TransactionBuilder(NETWORK)
+      for (var i = 0; i < inputData.length; i++) {
+        txb.addInput(inputData[i].txid,
+                     inputData[i].vout,
+                     0xffffffff,
+                     scriptPubKey)
+      }
+      var estimatedByteCount = getByteCountSegwitP2SH(inputData.length, 1)
+      var estimatedFeeSatoshis = Math.ceil(estimatedByteCount * satPerByte)
+      var totalSatoshis = inputData.reduce(function(total, item){return total += item.satoshis}, 0)
+      var totalSatoshisMinusFee = totalSatoshis - estimatedFeeSatoshis
+      if (DOUBLE_TX) {
+        if (NETWORK.scriptHash == toAddressObj.version) {
+          alert("Can't double Transaction to P2SH, please send to P2PKH")
+          return
+        }
+        var sendToScriptPubkey = redeemScript
+      } else if (NETWORK.pubKeyHash == toAddressObj.version) {
+        var sendToScriptPubkey = bitcoin.script.pubKeyHash.output.encode(toAddressObj.hash)
+      } else if (NETWORK.scriptHash == toAddressObj.version) {
+        var sendToScriptPubkey = bitcoin.script.scriptHash.output.encode(toAddressObj.hash)
+      }
+      txb.addOutput(sendToScriptPubkey,
+                    totalSatoshisMinusFee)
+      if (!DOUBLE_TX && !!ooishiMessage) txb.addOutput(ooishiMessage, 0)
+      for (var i = 0; i < inputData.length; i++) {
+        txb.sign(i, keyPair, redeemScript, null, inputData[i].satoshis)
+      }
+      var tx = txb.build()
+      var tx_txid = tx.getId()
+      var tx_raw = tx.toHex()
+      if (DOUBLE_TX) {
+        var secondTxInput = {
+          txid: tx_txid,
+          vout: 0,
+          satoshis: totalSatoshisMinusFee
+        }
+        var txb2 = new bitcoin.TransactionBuilder(NETWORK)
+        var sendAmountMinusFees = secondTxInput.satoshis - Math.ceil(142 * satPerByte)
+        if (secondTxInput.satoshis - Math.ceil(142 * satPerByte) < 0) {
+          alert('Not enough funds to pay for Double TX fees.')
+          return
+        }
+        if (parseInt(sendAmountMinusFees / 2) < 546) {
+          alert('Not enough funds to pay for Double TX fees. Would create dust.')
+          return
+        }
+        txb2.addInput(secondTxInput.txid,
+                      secondTxInput.vout,
+                      0xffffffff,
+                      redeemScript)
+        txb2.tx.ins[0].prevOutType = bitcoin.script.types.P2WPKH
+        txb2.addOutput(sendToScriptPubkey,
+                      parseInt(sendAmountMinusFees / 2))
+        txb2.addOutput(sendToScriptPubkey,
+                      parseInt(sendAmountMinusFees / 2))
+        if (!!ooishiMessage) txb2.addOutput(ooishiMessage, 0)
+        txb2.sign(0, keyPair, null, null, secondTxInput.satoshis)
+        var tx2 = txb2.build()
+        var tx2_txid = tx2.getId()
+        var tx2_raw = tx2.toHex()
+        console.log()
+        setTimeout(function(){
+          $.ajax({
+            async: true,
+            type: "POST",
+            url: API_DOMAIN + "/v1/blockchain/pushtx",
+            contentType: 'application/json',
+            dataType: "json",
+            data: JSON.stringify({hex: tx2_raw}),
+            success: function(result) {
+              console.log("Transaction #2 sent!");
+            }
+          });
+        },1500)
+      }
+      $.ajax({
+        async: true,
+        type: "POST",
+        url: API_DOMAIN + "/v1/blockchain/pushtx",
+        contentType: 'application/json',
+        dataType: "json",
+        data: JSON.stringify({hex: tx_raw}),
+        success: function(result) {
+          console.log("Transaction sent!");
+        }
+      });
+      $("#results").html(
+        "Transaction ID:<br><a href=\"" + EXPLORER_DOMAIN + "/tx/" + tx_txid + "\" target=\"_blank\">" +
+        tx_txid + "</a><br>" +
+        "Raw Transaction:<br><textarea cols=\"150\" rows=\"10\">" +
+        tx_raw + "</textarea>" +
+        (!DOUBLE_TX ? "" : "<br><br>Transaction #2 ID: (Raw Segwit inputs and outputs)<br><a href=\"" + EXPLORER_DOMAIN + "/tx/" + tx2_txid + "\" target=\"_blank\">" +
+        tx2_txid + "</a><br>" +
+        "Raw Transaction:<br><textarea cols=\"150\" rows=\"10\">" +
+        tx2_raw + "</textarea>")
+      );    
+      
 }
-</textarea> <br><br> 
-<b>Output:</b><br>
-BTC: <input type="text" id="btcc" onchange="btcConvert();" onkeyup="btcConvert();" value="1"><br>
-USD:<input type="text" id="usdc" onchange="usdConvert();" onkeyup="usdConvert();"><br>
-<br>
-Lesson Source Code: <a href="https://github.com/coinables/Bitcoin-USD-Price-Conversion-Tool" target="_blank">https://github.com/coinables/Bitcoin-USD-Price-Conversion-Tool</a><br>    
-</div>
-<div class="post">
-<h3>Stream Live Transactions with WebSocket</h3>
-Learn to use the websocket protocol. Transmit lots of data while using little bandwidth. <br>
-<button class="sltwws_btn">View</button> 
-</div>
-<div id="sltwws">
-Websockets allow lots a data throughput while using very littl bandwidth. In this lesson we will use blockchain.info websocket to stream 
-    live bitcoin transactions. <br><br>First of all let's put in our script tags <span id="addr">&lt;script&gt;&lt;&#47;script&gt;</span> and then we'll establish a connection to our websocket using <span id="addr">new WebSocket&#40;&#41;</span>.<br> 
+      
 
-<pre class="prettyprint">
-
-var btcs = new WebSocket('wss://ws.blockchain.info/inv');
-
-</pre><br>So we started by creating the variable <span id="addr">var btcs</span> and then we had that be equal to the new websocket connection. Now that we have a connection to the websocket we need to send it a message and tell blockchain.info which information we are interested in receiving. We are going to use the <span id="addr">onopen</span> and <span id="addr">send</span> API commands to do this. Let's call the previous variable <span id="addr">var btcs</span> and create a function that subscribes us to <span id="addr">&#123;"op":"unconfirmed_sub"&#125;</span> which is new transactions to the bitcoin network.<br>
-
-<pre class="prettyprint">
-btcs.onopen = function(){
-	btcs.send(JSON.stringify({"op":"unconfirmed_sub"}));
-	};
-</pre>
-
-<br><span id="addr">JSON.stringify</span> will send a JSON request to the websocket server telling it that we want to receive updates on new transactions to the network. At this point the server will start sending "messages" to the client everytime there is a new transaction. We need to tell javascript what to do everytime a message is received using the <span id="addr">onmessage</span> command. Create a new function using <span id="addr">onmessage</span> and I'm going to name the function onmsg. Within that function we will parse the JSON using the <span id="addr">data</span> command.<br>
-
-<pre class="prettyprint">
-btcs.onmessage = function(onmsg){
-	var response = JSON.parse(onmsg.data);
-	console.log(response);
-	}
-
-</pre><br>At this point you could stick this script into an HTML document and when you run it, it will start shooting out all the new transactions as objects in JSON format into your browsers debug/console. If you look at it you'll notice they all start with <span id="addr">utx</span> and then all the transaction data is under <span id="addr">x</span>. The data within the <span id="addr">x</span> array includes <span id="addr">input</span> and <span id="addr">out</span> or sender and receiver. If we want info form the input area we would call the <span id="addr">response</span> variable and then add in <span id="addr">.x.input</span>. However there can be multiple inputs and outs so we have to clarify which one. If we add in stright brackets and put a zero &#91;0&#93;that will get us information on the first item in the array. Here's an example that will get the BTC amount that was received by the first output.<br>
-
-<pre class="prettyprint">
-btcs.onmessage = function(onmsg){
-	var response = JSON.parse(onmsg.data);
-	var amount = response.x.out[0].value;
-	var calAmount = amount / 100000000;
-	console.log(calAmount);
-	}
-</pre>
-
-<br>You'll notice I also added in a calculation to divide the result by 100 million to get the value in bitcoins since the data is provided in satohis. Since it's still just going to the debug/console that's not very helpful to the user, let's add in some jquery to have this info output on the page. You can either install jquery to your server or just use a link to grab the min.js from jquery.com <span id="addr">http://code.jquery.com/jquery-1.11.0.min.js</span>.<br><br>
-
-Within the onmessage function I'm going to start with <span id="addr">$&#40;'#messages'&#41;</span> which tells jquery to look for the element in the HTML that has the ID of "messages". Since I don't have one yet I'll add some HTML and create a div with the ID "messages". Now I'll tell jquery to prepend &#40;add to the top&#41; each new amount within a p tag. The completed code will look like this<br>
-<pre class="prettyprint">
-&lt;html&gt;
-&lt;script src="http://code.jquery.com/jquery-1.11.0.min.js"&gt;&lt;&#47;script&gt;
-
-&lt;script&gt;
-var btcs = new WebSocket('wss://ws.blockchain.info/inv');
-
-btcs.onopen = function()
-	{
-	btcs.send( JSON.stringify( {"op":"unconfirmed_sub"} ) );
-	};
-
-btcs.onmessage = function(onmsg)
-	{
-	var response = JSON.parse(onmsg.data);
-	var amount = response.x.out[0].value;
-	var calAmount = amount &#47; 100000000;
-	$('#messages').prepend("&lt;p&gt;" + calAmount + "&lt;&#47;p&gt;");
-	}
-
-&lt;&#47;script&gt;
-&lt;body&gt;
-&lt;div id="messages"&gt;&lt;&#47;div&gt;
-&lt;&#47;body&gt;
-&lt;&#47;html&gt;
-</pre><br>
-<b>Output:</b><br>
-<div id="messages"></div>
-<script>
-var btcs = new WebSocket('wss://ws.blockchain.info/inv');
-
-btcs.onopen = function()
-	{
-	btcs.send( JSON.stringify( {"op":"unconfirmed_sub"} ) );
-	};
-
-btcs.onmessage = function(onmsg)
-	{
-	var response = JSON.parse(onmsg.data);
-	var amount = response.x.out[0].value;
-	var calAmount = amount / 100000000;
-	$('#messages').prepend("<p>" + calAmount + "</p>");
-	}
-
-</script><br>
-</div>
-    <br><center>Want more tutorials? <br>
-    These are created in my free time. Everyone's time should be valuable, please consider donating.<br>
-    Donate: <a href="https://blockchain.info/address/1NPrfWgJfkANmd1jt88A141PjhiarT8d9U" target="_blank">1NPrfWgJfkANmd1jt88A141PjhiarT8d9U</a> <br>
-    </center>
-</body>
-    <script src="js/price.js"></script>
-<script>
-$('.htgtcbp_btn').click(function() {
-    $('#htgtcbp').toggle('slow');
+         
+function getByteCountSegwitP2SH(inputCount,outputCount,isMultisig,m,n) {
+  var inputSize = isMultisig ? ((73 * m) + (34 * n) + 6 + (76 * 4)) : 108 + (64 * 4)
+  var outputSize = 34 * 4
+  var estimatedWeight = inputSize * inputCount + outputSize * outputCount + 10 * 4
+  return Math.ceil(estimatedWeight / 4)
+}  
+      
+      
+    
+$(document).ready( function() {
+      $("#sweepkey").on('click', sweepKey);
+      $("#vanityBtn").on('click', vanity);
+      Buffer = bitcoin.script.compile([]).constructor;
+      $.ajax({
+        async: true,
+        type: "GET",
+        url: "https://bws.bitpay.com/bws/api/v2/feelevels",
+        success: function(result) {
+          var satPerByte = Math.ceil(result.filter(function(item){ return item.level == "superEconomy" })[0].feePerKb / 1000)
+          var calcSat = satPerByte / 2;
+          $("#satperbyte").val(calcSat.toFixed(0));
+        }
+      });
 });
-$('.cabuc_btn').click(function() {
-    $('#cabuc').toggle('slow');
-});  
-$('.sltwws_btn').click(function() {
-    $('#sltwws').toggle('slow');
-});      
-</script>
+     
+  
+  </script>
 <script>
 //redirect https if not local
 if (window.location.host.indexOf('github.io') > -1 && window.location.protocol != "https:"){
     window.location.protocol = "https";
 }
-</script>
+</script>    
+</body>
 </html>
