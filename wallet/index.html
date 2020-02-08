@@ -3,9 +3,12 @@
 <head>
 <link rel="stylesheet" href="bootswatch.css">
 <script src="jquery-3.3.1.min.js"></script>
+<!-- bitcoinjs-lib -->
 <script type="text/javascript" src="bitcoin.js"></script>
 <!-- buidl.js (bitcoinjs-lib wrapper) -->
 <script src="buidl.js"></script>
+<!-- QRCode lib -->
+<script type="text/javascript" src="../js/qrcode.js"></script>
 
 <style>
 .input { }
@@ -25,10 +28,18 @@ html,body{
 	color: #e2e2e2;
 	font-weight: bold;
 }
+#qrdisplay{
+	position: fixed;
+	top: 5px;
+	right: 5px;
+}
 </style>
 </head>
 <body>
 <h1>jsWallet</h1>
+<div id="qrdisplay">
+
+</div>
 <ul class="nav nav-tabs">
   <li class="nav-item">
     <a class="nav-link active" data-toggle="tab" href="#" onclick="return navHome();">Home</a>
@@ -54,13 +65,13 @@ html,body{
     <p><button onclick="return newAddr();" class="btn btn-info">Create New</button>&nbsp;&nbsp;<button onclick="return loadfromwif();" class="btn btn-success">Load From WIF</button>&nbsp;&nbsp;<button onclick="return loadfrombrain();" class="btn btn-danger" title="Will derive compressed private key and addresses based on the brain wallet phrase entered into the WIF Private Key field below.">Load From Brain Wallet</button></p>
 	<label for="pairlabel">Label/Note</label>
 	<input type="text" id="pairlabel" class="form-control"><br>
-	<label for="pkey">WIF Private Key</label>
+	<label for="pkey">WIF Private Key</label><span style="font-size: 24px;" class="qr"><b>&#9860;</b></span>
 	<input type="text" id="pkey" class="form-control"><br>
-	<label for="legacy">Legacy Address (P2PKH)</label>
+	<label for="legacy">Legacy Address (P2PKH)</label><span style="font-size: 24px;" class="qr"><b>&#9860;</b></span>
 	<input type="text" id="legacy" class="form-control"><br>
-	<label for="nativesw">SegWit Address (P2WPKH)</label>
+	<label for="nativesw">SegWit Address (P2WPKH)</label><span style="font-size: 24px;" class="qr"><b>&#9860;</b></span>
 	<input type="text" id="nativesw" class="form-control"><br>
-	<label for="p2shsw">P2SH SegWit Address (P2SH-P2WPKH)</label>
+	<label for="p2shsw">P2SH SegWit Address (P2SH-P2WPKH)</label><span style="font-size: 24px;" class="qr"><b>&#9860;</b></span>
 	<input type="text" id="p2shsw" class="form-control"><br>
 	<p><button type="button" onclick="return savePair();" class="btn btn-info">Save Key Pair</button>&nbsp;&nbsp;<button id="showpairsbtn" type="button" onclick="return showPairs();" class="btn btn-warning">Show Key Pairs</button></p>
 	<br>
@@ -406,6 +417,7 @@ html,body{
 	</script>
   </div>
 </div>
+
 <script>
 
 //navigation UI
@@ -566,6 +578,26 @@ function segwitInput(){
 function bech32Input(){
 	document.getElementById("inputType").value = "b";
 	document.getElementById("inputvalue").disabled = false;
+}
+
+//qrcode
+var qrs = document.getElementsByClassName("qr");
+
+for(var i=0;i<qrs.length;i++){
+	qrs[i].addEventListener("mouseover", function( event ) {   
+  
+    var qrdata = this.nextSibling.nextSibling.value;
+	//create new qrcode
+	new QRCode(document.getElementById("qrdisplay"), qrdata);
+    //document.getElementById("qrdisplay").innerHTML += '<br>'+qrdata;
+
+	}, false);
+
+  	qrs[i].addEventListener("mouseleave", function( event ) {   
+
+    document.getElementById("qrdisplay").innerHTML = '';
+
+  }, false);
 }
 
 
