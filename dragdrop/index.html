@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html, body{
+	font-family: "Arial", sans-serif;
+}
+
+a:link {
+text-decoration: none;
+}
+
+a:visited {
+text-decoration: none;
+}
+    
+#holder {
+  border: 10px dashed #ccc;
+  width: 680px;
+  height: 200px;
+  text-align: center;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+#holder.hover {
+  border: 10px dashed #333;
+}
+
+.hdr{
+	font-weight: bold;
+	font-size: 22px;
+}
+.out{
+	padding: 12px;
+	background-color: #fefefe;
+	color: #1e1e1e;
+	margin: 7px;
+	border: 1px solid #ddd;
+	border-radius: 5px;
+}
+.well{
+    padding: 16px;
+    border: 2px solid #aaa;
+    border-radius: 3px;
+    background-color: #ddd;
+    color: #000;
+    box-shadow: 0 6px 6px -6px rgba(0, 0, 0, 1);
+}
+ .label-default{
+        padding: 3px;
+        border: 1px solid #ccc;
+        border-radius: 2px;
+        text-decoration: none;
+        color: #222;
+}
+.label-primary{
+    padding: 3px;
+    border: 1px solid #0088ff;
+    background-color: #0088ff;
+    border-radius: 2px;
+    text-decoration: none;
+    color: white;
+}
+.label-success{
+    padding: 3px;
+    border: 1px solid #52BE80;
+    background-color: #52BE80;
+    border-radius: 2px;
+    text-decoration: none;
+    color: white;
+}
+.label-reference{
+    padding: 3px;
+    border: 1px solid #333;
+    background-color: grey;
+    border-radius: 2px;
+    text-decoration: none;
+    color: white;
+}   
+</style>
+ <!-- jQuery -->
+ <script src="jquery.js"></script>
+ <!-- buidl.js (bitcoinjs-lib wrapper) -->
+ <script src="buidl.js"></script>
+ <!-- QRCode library -->
+ <script type="text/javascript" src="qrcode.js"></script>
+</head>
+<body>
+<h2>Create a Key Pair From a File</h2>
+    
+    <!-- introduction -->
+<br>   
+<div class="well">This standalone page can be run offline, it is <a href="https://github.com/coinables/coinables.github.io/tree/master/dragdrop"><span class="label label-primary">OPEN SOURCE</span></a> and uses <a href="https://github.com/coinables/buidljs">buidl.js</a> an easy to use layer on top of the <a href="https://github.com/bitcoinjs/bitcoinjs-lib"><span class="label label-success">BitcoinJS</span></a> library.<br><br> Create a key pair using the raw bytes of a file. It's important to be aware that this file should be absolutely unique, such as a photo you took and have never shared and has never been accessible on an internet connected device. 
+<p>If you intend to use the source file as your back-up (instead of saving the resulting paper wallet or private key) keep in mind any changes to the file <b>(INCLUDING META DATA)</b> will result in a different key pair. <br>USE AT YOUR OWN RISK. </p>
+
+You can enable testnet mode by adding  <span class="label label-reference">?testnet=true</span>  to the end of the url.
+</div> 
+<br>
+<br>
+<!-- Create Drag-Drop Address -->
+<div id="holder">DRAG/DROP ANY FILE</div>
+
+<span class="hdr">Address: </span><div id="addr" class="out"></div>
+<span class="hdr">P2SH Segwit Address: </span><div id="p2shsegwit" class="out"></div>
+<span class="hdr">Bech32 Address: </span><div id="bech32" class="out"></div>
+<span class="hdr">PrivateKey: </span><div id="pkey" class="out"></div>
+
+
+<script>
+var holder = document.getElementById('holder');
+
+holder.ondragover = function() {
+  return false;
+};
+
+holder.ondragend = function() {
+  return false;
+};
+
+holder.ondrop = function(event) {
+  event.preventDefault();
+
+  var file = event.dataTransfer.files[0];
+  var reader = new FileReader();
+
+  reader.onload = function(event) {	
+    	var binary = event.target.result;
+	var newPair = buidl.createFrom(binary);
+    	var bech32 = newPair.p2wpkh;
+	var addr = newPair.p2pkh;
+	var p2shwit = newPair.p2shp2wpkh;
+	var pkey = newPair.pk;
+	//console.log(binary);
+   	console.log(addr, pkey);
+	$("#addr").html(addr);
+	$("#pkey").html(pkey);
+	$("#bech32").html(bech32);
+	$("#p2shsegwit").html(p2shwit);
+  };
+
+  reader.readAsBinaryString(file);
+};
+</script>
+
+</body>
+</html>
