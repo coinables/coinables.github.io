@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script type="text/javascript" src="bitcoin.js"></script>
+<script src="jquery-3.3.1.min.js"></script>
+<style>
+html,body{
+	margin: 0;
+	padding: 0;
+	background-color: #2e2e2e;
+	color: #d1d1d1;
+	font-family: Arial, sans-serif;
+	font-size: 11px;
+}
+.input { color: #fff;  height: 50px; background-color: #2e2e2e; }
+.green { background-color: #00cc00; }
+#header{
+	font-size: 30px;
+	color: #fff;
+	text-shadow:
+    0 0 0.5px #fff,
+    0 0 1px #fff,
+    0 0 2px #fff,
+    0 0 3px #0ff;
+}
+#hdr{
+	color: #fff;
+	font-weight: bold;
+	font-size: 24px;
+}
+#amtsats{
+	background-color: #ccc;
+}
+.wideinput{
+	width: 500px;
+}
+#floating_exchange_div{
+	position: absolute;
+	top: 7px;
+	right: 10px;
+}
+.addrEach{
+	display: inline-block;
+	position: relative;
+	margin: 2px;
+	border: 1px solid #ffc107;
+	border-radius: 5px;
+	padding: 7px;
+	cursor: pointer;
+}
+.addrEach:hover{
+	border: 1px solid #ffea07;
+	cursor: pointer;
+}
+button {
+	margin: 2px;
+	border: 1px solid #ffc107;
+	border-radius: 5px;
+	padding: 7px;
+}
+.frm{
+	border: 1px solid #ffc107;
+	border-radius: 5px;
+	background-color: #1d1d1d;
+	padding: 4px;
+	color: #e0e0e0;
+}
+.addr{
+	font-weight: bold;
+	color: #f0f0f0;
+	font-size: 13px;
+	text-shadow:
+    0 0 1px #fff,
+    0 0 1.6px #fff;
+}
+
+.utxoEach{
+	position: relative; 
+	float: right;
+}
+#action_container{
+	position: relative;
+	display: none;
+}
+#consolidateBtn{
+	position: relative;
+	display: none;
+}
+#send_container{
+	position: relative;
+	display: none;
+}
+a {
+	color: #0275d8;
+}
+a:visited {
+	color: #0275d8;
+}
+</style>
+</head>
+<body>
+<span id="hdr">utxo</span><span id="header"><em>BUCKET</em></span>
+<br><br>
+<h3>Balance</h3>
+<div id="balance_container">
+<input type="text" id="balance" class="frm">&nbsp;&nbsp;<input type="text" id="balanceusd" class="frm" readonly>
+</div>
+<br>
+<br>
+<div id="addressBar"><b>Add an Address:</b> <input type="text" id="address" class="frm"> <button id="getaddr">GET UTXOs</button></div>
+
+<p>Enter an address to scan for Unspent Transaction Outputs (UTXOs) or simply bitcoins that have not yet been spent. If you 
+have the associated WIF private key to that address you can also specifically select which ones you want to spend. This actually creates 
+and broadcasts the transaction to the bitcoin network. Use at your own risk.</p>
+<br>
+<hr>
+<h3>Addresses</h3>
+<div id="addr_container">
+</div>
+<br>
+<hr>
+<h3>UTXOs</h3>
+<table width="100%">
+	<tr><td>
+	<div id="utxo_container">
+	</div>
+	<br>
+	<div id="action_container">
+	<button id="sendBtn" type="button" onclick="return sendtobutton();">Send To Address</button> &nbsp;
+	<!-- <button id="consolidateBtn" type="button">Consolidate UTXOs</button> -->
+	</div>
+	</td><td>
+	<div id="send_container">
+	To Address: <input type="text" class="frm wideinput" id="toaddress"><br>
+	Amount to Send: <input type="number" id="sendamount" class="frm" onchange="return recalcSend();"><br>
+	Fee Rate (satoshis per byte): <input type="number" value="10" class="frm" id="satperbyte" onchange="return recalcFee();"><br>
+	Fee: <input type="number" class="frm" id="feeamount" readonly><br>
+	Change: <input type="number" class="frm" id="changeamount" readonly><br>
+	Where to send change: <input type="text" class="frm wideinput" id="changeaddress"><br>
+	WIF Private Key: <input type="password" id="wifpkey" class="frm wideinput">
+	<div width="100%" style="text-align: center;"><button type="button" id="analyze">RELEASE FUNDS</button></div>
+	</div>
+	</td></tr>
+	<tr>
+	<td colspan="2">
+	<div id="hexout" style="background-color: #1d1d1d; color: #f0f0f0;"></div>
+	</td>
+	</tr>
+</table>
+
+<div id="floating_exchange_div">Enter USD Value of 1 BTC(offline mode), or <a href="#" id="websync">sync websocket</a>
+<input type="text" id="exchange_rate" onchange="return changeExchange();" class="frm">
+<input type="hidden" id="viewing">
+<input type="hidden" id="totalselected">
+<input type="hidden" id="availableafterfee">
+</div>
+
+<script>
+window.onload = function (){
+	//get addresses and utxos in localStorage
+	
+	var keystoragelen = allStorage().length;
+	
+	addressArr = [];
+	balanceStart = 0;
+		
+		for(var i=0;i<keystoragelen;i++){
+		//begin looping through addresses
+			var parsepair = JSON.parse(allStorage()[i]);
+			addressArr.push(parsepair[0].addr);
+			
+			subtotal = 0;
+			utxocount = 0;
+			for(ii=0;ii<parsepair.length;ii++){
+				//looping through utxos for this address
+				balanceStart += parsepair[ii].value;
+				subtotal += parsepair[ii].value;
+				utxocount = parsepair.length;
+			}
+			var subConvert = subtotal/100000000;
+				subConvert = subConvert.toFixed(8);
+				$("#addr_container").append('<div class="addrEach" id="'+parsepair[0].addr+'"><span class="addr">'+parsepair[0].addr+'</span><br>BTC:'+subConvert+' <span class="utxoEach"># of UTXOs: '+utxocount+'</span></div>');
+			var btcConvert = balanceStart/100000000;
+				btcConvert = btcConvert.toFixed(8);
+				$("#balance").val(btcConvert);
+			
+		}
+	
+	var addrObjs = document.getElementsByClassName("addrEach"); 
+
+	for(i=0;i<addrObjs.length;i++){
+		var addrBlock = addrObjs[i];
+		addrBlock.onclick = function(){
+			console.log(this.id)
+			$("#viewing").val(this.id)
+			$("#utxo_container").html("")
+			$("#action_container").hide()
+			$("#send_container").hide()
+			$("#totalselected").val(0)
+			//find utxos for this address only
+			var findAddresses = allStorage().length;
+				
+				subtotal = 0;
+				utxocount = 0;
+				
+				for(var i=0;i<findAddresses;i++){
+					//begin looping through addresses
+					var parsepair = JSON.parse(allStorage()[i]);
+				
+					if(this.id===parsepair[0].addr){
+						
+						//address matches get these utxos only
+						for(ii=0;ii<parsepair.length;ii++){
+							//looping through utxos for this address
+							balanceStart += parsepair[ii].value;
+							subtotal += parsepair[ii].value;
+							utxocount = parsepair.length;
+							$("#utxo_container").append('<button class="input" value="'+ii+'">'+parsepair[ii].value+'</button>')
+						}
+						
+					}
+					
+					
+					
+					
+					
+				}
+				
+				
+				$(".input").click(function() {
+					//console.log(this);
+					var utxosSelected = document.getElementsByClassName("green");
+					$(this).toggleClass("green");
+					if($(this).hasClass("green")){
+						
+						var addval = parseFloat($(this).html());
+						console.log("added "+addval);
+						var existAmt = parseFloat($("#totalselected").val())
+						var newAmt = addval + existAmt;
+						$("#totalselected").val(newAmt)
+							 
+							if(utxosSelected.length > 0){
+								//show send to button
+								console.log("only show send")
+								$("#action_container").fadeIn();
+								$("#consolidateBtn").hide();
+								if(utxosSelected.length > 1){
+									//show consolidate button
+									console.log("show send and consolidate")
+									$("#consolidateBtn").fadeIn();
+								}
+							} else {
+									$("#action_container").fadeOut();
+							}
+						
+						
+						
+						
+						
+					} else {
+						
+						var addval = parseFloat($(this).html());
+						var existAmt = parseFloat($("#totalselected").val())
+						var newAmt = existAmt - addval;
+						$("#totalselected").val(newAmt)
+							
+								if(utxosSelected.length > 0){
+									//show send to button
+									console.log("only show send")
+									$("#action_container").fadeIn();
+									$("#consolidateBtn").hide();
+									if(utxosSelected.length > 1){
+										//show consolidate button
+										console.log("show send and consolidate")
+										$("#consolidateBtn").fadeIn();
+									}
+								} else {
+									$("#action_container").fadeOut();
+								}			
+													
+						
+					}
+						
+				  });
+				  
+				  $("#analyze").click(function(){
+						var selectnum = document.getElementsByClassName("green");
+						inputlen = selectnum.length;
+						inputstousearray = [];
+						for(var i=0;i<inputlen;i++){
+							inputstousearray.push(selectnum[i].value);
+						}
+						console.log(inputstousearray);
+						var totalSatoshis = 0;
+						NETWORK = b.bitcoin.networks.bitcoin;
+						var txb = new b.bitcoin.TransactionBuilder(NETWORK)
+						
+						//determine transaction type
+						var spendtype = $("#viewing").val().substring(0,1)
+						
+						if(spendtype==="3"){
+							//p2sh segwit type
+							//need scriptPubKey for adding input
+							let WIF = $("#wifpkey").val(); //private key of p2sh-p2wpkh output
+							let keypair = b.bitcoin.ECPair.fromWIF(WIF, NETWORK);			
+							let pubKey = keypair.getPublicKeyBuffer();
+							let pubKeyHash = b.bitcoin.crypto.hash160(pubKey);
+							let redeemScript = b.bitcoin.script.witnessPubKeyHash.output.encode(pubKeyHash);
+							let redeemScriptHash = b.bitcoin.crypto.hash160(redeemScript);
+							let scriptPubkey = b.bitcoin.script.scriptHash.output.encode(redeemScriptHash);
+							
+							for(var ii=0;ii<inputlen;ii++){
+								var inputtouse = inputstousearray[ii];			
+								var findAddresses = allStorage().length;
+												
+								for(var iii=0;iii<findAddresses;iii++){
+									//begin looping through addresses
+									parsepair = JSON.parse(allStorage()[iii]);
+									var fromaddress = $("#viewing").val()
+									if(fromaddress===parsepair[0].addr){
+										dataloop = JSON.parse(allStorage()[iii]);
+										//looping through selected utxos
+										console.log(dataloop[inputtouse].txid);
+										txb.addInput(dataloop[inputtouse].txid,
+													dataloop[inputtouse].nout,
+													0xffffffff,
+													scriptPubkey)
+										totalSatoshis = parseFloat(totalSatoshis) + parseFloat(dataloop[inputtouse].value);
+										console.log(totalSatoshis);
+										
+									}		
+									
+									
+								}
+								
+								
+							}
+							
+							//add output
+							var toaddress = $("#toaddress").val();
+							var toaddressamt = $("#sendamount").val();
+							toaddressamt = parseFloat(toaddressamt);
+							var changeaddress = $("#changeaddress").val();
+							var changeaddressamt = $("#changeamount").val();
+							changeaddressamt = parseFloat(changeaddressamt);
+							txb.addOutput(toaddress,toaddressamt);
+							if(changeaddressamt<1000){
+							} else {
+								if(changeaddress.length<1){
+								} else {
+									txb.addOutput(changeaddress,changeaddressamt);
+								}	
+							}
+							//sign each input
+							for(var iiii=0;iiii<inputlen;iiii++){
+								var inputtouse = inputstousearray[iiii];
+								var inputvalue = dataloop[inputtouse].value;
+								txb.sign(iiii, keypair, redeemScript, null, inputvalue);
+							}
+							
+							var tx = txb.build();
+							txhex = tx.toHex();
+						
+						
+							$.ajax({
+								async: true,
+								type: "POST",
+								url: "https://api.smartbit.com.au/v1/blockchain/pushtx",
+								contentType: 'application/json',
+								dataType: "json",
+								data: JSON.stringify({hex: txhex}),
+								success: function(result) {
+								  $("#hexout").html(JSON.stringify(result));
+								}
+							  });
+							
+						} //end p2sh segwit spend type
+						
+						
+						if(spendtype==="1"){
+							//legacy spend type
+							let WIF = $("#wifpkey").val(); //private key of p2sh-p2wpkh output
+							let keypair = b.bitcoin.ECPair.fromWIF(WIF, NETWORK);	
+							
+							for(var ii=0;ii<inputlen;ii++){
+								var inputtouse = inputstousearray[ii];			
+								var findAddresses = allStorage().length;
+												
+								for(var iii=0;iii<findAddresses;iii++){
+									//begin looping through addresses
+									parsepair = JSON.parse(allStorage()[iii]);
+									var fromaddress = $("#viewing").val()
+									if(fromaddress===parsepair[0].addr){
+										dataloop = JSON.parse(allStorage()[iii]);
+										//looping through selected utxos
+										console.log(dataloop[inputtouse].txid);
+										txb.addInput(dataloop[inputtouse].txid,
+													dataloop[inputtouse].nout)
+										totalSatoshis = parseFloat(totalSatoshis) + parseFloat(dataloop[inputtouse].value);
+										console.log(totalSatoshis);
+										
+									}		
+									
+									
+								}
+								
+								
+							}
+							
+							//add output
+							var toaddress = $("#toaddress").val();
+							var toaddressamt = $("#sendamount").val();
+							toaddressamt = parseFloat(toaddressamt);
+							var changeaddress = $("#changeaddress").val();
+							var changeaddressamt = $("#changeamount").val();
+							changeaddressamt = parseFloat(changeaddressamt);
+							txb.addOutput(toaddress,toaddressamt);
+							if(changeaddressamt<1000){
+							} else {
+								if(changeaddress.length<1){
+								} else {
+									txb.addOutput(changeaddress,changeaddressamt);
+								}	
+							}
+							//sign each input
+							for(var iiii=0;iiii<inputlen;iiii++){
+								var inputtouse = inputstousearray[iiii];
+								var inputvalue = dataloop[inputtouse].value;
+								txb.sign(iiii, keypair);
+							}
+							
+							var tx = txb.build();
+							txhex = tx.toHex();
+						
+						
+							$.ajax({
+								async: true,
+								type: "POST",
+								url: "https://api.smartbit.com.au/v1/blockchain/pushtx",
+								contentType: 'application/json',
+								dataType: "json",
+								data: JSON.stringify({hex: txhex}),
+								success: function(result) {
+								  $("#hexout").html(JSON.stringify(result));
+								}
+							  });
+						}
+						
+						if(spendtype==="b"){
+							let WIF = $("#wifpkey").val(); //private key of p2wpkh output
+							let keypair = b.bitcoin.ECPair.fromWIF(WIF, NETWORK);			
+							let scriptPubkey = b.bitcoin.script.witnessPubKeyHash.output.encode(
+												b.bitcoin.crypto.hash160(	
+												keypair.getPublicKeyBuffer()
+												)
+								   );
+							
+							for(var ii=0;ii<inputlen;ii++){
+								var inputtouse = inputstousearray[ii];			
+								var findAddresses = allStorage().length;
+												
+								for(var iii=0;iii<findAddresses;iii++){
+									//begin looping through addresses
+									parsepair = JSON.parse(allStorage()[iii]);
+									var fromaddress = $("#viewing").val()
+									if(fromaddress===parsepair[0].addr){
+										dataloop = JSON.parse(allStorage()[iii]);
+										//looping through selected utxos
+										console.log(dataloop[inputtouse].txid);
+										txb.addInput(dataloop[inputtouse].txid,
+													dataloop[inputtouse].nout,
+													0xffffffff,
+													scriptPubkey)
+										totalSatoshis = parseFloat(totalSatoshis) + parseFloat(dataloop[inputtouse].value);
+										console.log(totalSatoshis);
+										
+									}		
+									
+									
+								}
+								
+								
+							}
+							
+							//add output
+							var toaddress = $("#toaddress").val();
+							var toaddressamt = $("#sendamount").val();
+							toaddressamt = parseFloat(toaddressamt);
+							var changeaddress = $("#changeaddress").val();
+							var changeaddressamt = $("#changeamount").val();
+							changeaddressamt = parseFloat(changeaddressamt);
+							txb.addOutput(toaddress,toaddressamt);
+							if(changeaddressamt<1000){
+							} else {
+								if(changeaddress.length<1){
+								} else {
+									txb.addOutput(changeaddress,changeaddressamt);
+								}	
+							}
+							//sign each input
+							for(var iiii=0;iiii<inputlen;iiii++){
+								var inputtouse = inputstousearray[iiii];
+								var inputvalue = dataloop[inputtouse].value;
+								txb.sign(iiii, keypair, null, null, inputvalue);
+							}
+							
+							var tx = txb.build();
+							txhex = tx.toHex();
+						
+						
+							$.ajax({
+								async: true,
+								type: "POST",
+								url: "https://api.smartbit.com.au/v1/blockchain/pushtx",
+								contentType: 'application/json',
+								dataType: "json",
+								data: JSON.stringify({hex: txhex}),
+								success: function(result) {
+								  $("#hexout").html(JSON.stringify(result));
+								}
+							  });
+						}
+					
+					});  
+		}
+	}
+}
+
+function sendtobutton(){
+	$("#send_container").fadeIn();
+	var fromaddress = $("#viewing").val()
+	var satPerByte = $("#satperbyte").val()
+	$("#changeaddress").val(fromaddress);
+	//default amount based on leftover after fee
+	var totalSatsSelected = $("#totalselected").val()
+	var numofinputs = document.getElementsByClassName("green").length;
+	$("#changeamount").val(0)
+	
+	var amounttosend = calcTotal(numofinputs,1,satPerByte,totalSatsSelected)
+	$("#sendamount").val(amounttosend)
+	$("#availableafterfee").val(amounttosend);
+	feecheck();
+}
+
+function recalcFee(){
+	var satPerByte = $("#satperbyte").val()
+	var totalSatsSelected = $("#totalselected").val()
+	var numofinputs = document.getElementsByClassName("green").length;
+	var numofoutputs = 1;
+	var changeoutamt = 0;
+	var totalSatsLessChange = totalSatsSelected;
+	if($("#changeamount").val() > 3000){ 
+		numofoutputs = 2;
+		changeoutamt = $("#changeamount").val();
+		totalSatsLessChange = totalSatsSelected - changeoutamt;
+	}
+	var amounttosend = calcTotal(numofinputs,numofoutputs,satPerByte,totalSatsLessChange)
+	$("#sendamount").val(amounttosend)
+	feecheck();
+}
+
+function recalcSend(){
+	var available = $("#availableafterfee").val()
+	var newamount = $("#sendamount").val()
+	var newchangeamt = available - newamount;
+	var totalSatsSelected = $("#totalselected").val()
+	if(newchangeamt > 0){
+		$("#changeamount").val(newchangeamt)
+	} else {
+		$("#sendamount").val(available)
+		$("#changeamount").val(0)
+	}
+	feecheck();
+}
+
+function feecheck(){
+	var totalSatsSelected = $("#totalselected").val()
+	var amounttosend = $("#sendamount").val()
+	var changeoutamt = $("#changeamount").val();
+	var feeamt = totalSatsSelected - amounttosend - changeoutamt; 
+	$("#feeamount").val(feeamt)
+}
+
+function sendfunds(){
+	  //get fee rate from input
+      var satPerByte = $("#satperbyte").val()
+      if (satPerByte == "") {
+        alert("Please enter Satoshi Per Byte Fee Rate!")
+        return
+      }
+}
+
+function calcTotal(numinputs,numoutputs,satperbyte,totalsatoshis){
+	var estimatedByteCount = getByteCountSegwitP2SH(numinputs, numoutputs)
+	var estimatedFeeSatoshis = Math.ceil(estimatedByteCount * satperbyte)
+	var totalSatoshisMinusFee = totalsatoshis - estimatedFeeSatoshis
+	return totalSatoshisMinusFee
+}
+
+function getByteCountSegwitP2SH(inputCount,outputCount,isMultisig,m,n) {
+	  var inputSize = isMultisig ? ((73 * m) + (34 * n) + 6 + (76 * 4)) : 108 + (64 * 4)
+	  var outputSize = 34 * 4
+	  var estimatedWeight = inputSize * inputCount + outputSize * outputCount + 10 * 4
+	  return Math.ceil(estimatedWeight / 4)
+}  
+
+function changeExchange(){
+	var exchInput = document.getElementById("exchange_rate");
+	var exchangeRate = exchInput.value;
+	var balance = $("#balance").val();
+	$("#balanceusd").val("$"+(exchangeRate * balance).toFixed(2))
+	
+}
+
+var synclink = document.getElementById("websync")
+synclink.onclick = function(){
+	var ws = new WebSocket("wss://api-pub.bitfinex.com/ws/2");
+	ws.onopen = function(){
+	  ws.send(JSON.stringify({"event":"subscribe", "channel":"ticker", "pair":"BTCUSD"}))
+	};
+	ws.onmessage = function(msg){
+	  var response = JSON.parse(msg.data);
+	  var hb = response[1];
+	  if(hb !== "hb"){
+		document.getElementById("exchange_rate").value = response[1][0];
+		changeExchange();
+	  }
+	};
+} 
+
+function allStorage() {
+
+    var values = [],
+        keys = Object.keys(localStorage),
+        i = keys.length;
+
+    while ( i-- ) {
+        values.push( localStorage.getItem(keys[i]) );
+    }
+
+    return values;
+}
+</script>
+
+<script>
+$("#getaddr").click(function(){
+	var addr = $("#address").val();
+	var netselect = $("#networkselect").val();
+	var NETWORK = netselect === "testnet" ? "test-api" : "api";
+	var data
+	$.ajax({
+		async: true,
+		type: "GET",
+		url: "https://"+NETWORK+".smartbit.com.au/v1/blockchain/address/"+addr+"/unspent",
+		success: function(result) {
+		  console.log(result.unspent.length + " utxos found");
+		  data = result.unspent.map(function(item){
+			return {
+			  "txid": item.txid,
+			  "vout": item.n,
+			  "satoshis": item.value_int
+			}
+		  })
+		  //output response into the inputdata element
+			
+			//only write if data exists
+			if(data.length > 0){
+				//proceed to save utxos
+				var jsonData = data;
+	
+				var addr = $("#address").val();
+				
+				theseutxos = [];
+				
+				for(i=0;i<jsonData.length;i++){
+					var creatUTXO = new utxoObj(addr, jsonData[i].txid, jsonData[i].vout, jsonData[i].satoshis);
+					theseutxos.push(creatUTXO);
+				}
+				console.log(theseutxos);
+				window.localStorage.setItem(addr, JSON.stringify(theseutxos));
+
+				alert("Saved "+addr);
+			} else {
+				//do nothing
+				alert("No UTXOs Found");
+			}
+		    
+		  
+		}
+		
+	  });
+	  
+});
+
+
+	class utxoObj {
+			constructor(addr, txid, nout, value){
+			this.addr = addr;
+			this.txid = txid;
+			this.nout = nout;
+			this.value = value;
+		  }
+
+	}
+
+	
+
+</script>
+<br><br>
+API to obtain UTXOs and broadcast transactions provided by: smartbit.com.au 
+</body>
+</html>
