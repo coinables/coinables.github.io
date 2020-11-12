@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script type="text/javascript" src="bitcoin.js"></script>
+<script src="jquery-3.3.1.min.js"></script>
+<style>
+.input { color: #fff;  height: 50px; background-color: #336699; }
+.green { background-color: #00cc00; }
+#amtsats{
+	background-color: #ccc;
+}
+.wideinput{
+	width: 500px;
+}
+</style>
+</head>
+<body>
+<b>Select Network:</b> <select id="networkselect"><option value="testnet">Testnet</option><option value="mainnet">Mainnet</option></select><br>
+<br>
+<b>Paste UTXO JSON:</b> <input type="text" id="inputdata" class="wideinput">
+<br><br><button id="getaddr">LOAD</button>
+<br><br>
+<b>Choose Which UTXOs to Spend:</b>
+<div id="utxobuttons"></div>
+<script>
+$("#getaddr").click(function(){
+			
+		var netselect = $("#networkselect").val();
+		var NETWORK = netselect === "testnet" ? b.bitcoin.networks.testnet : b.bitcoin.networks.bitcoin;
+		  var inputData = $("#inputdata").val();
+		  dataloop = JSON.parse(inputData);
+		  for(var i=0;i<dataloop.length;i++){
+			$("#utxobuttons").append('<button class="input" value="'+i+'">'+dataloop[i].satoshis+'</button>');
+		  }
+		  $("#utxobuttons").append('<br><br><b>Total Satoshis Selected</b> <input type="text" id="amtsats" value="0" readonly><span id="btcval"></span><br><br><b>Output Address: </b><input type="text" id="outputaddr" class="wideinput"> <input type="text" id="outputamt" class="amountinputs"><br><br><b>Change Output: </b><input type="text" id="changeaddr" class="wideinput"> <input type="text" id="changeamt" class="amountinputs"><br><br><b>Miners Fee: </b><input type="text" id="feerate"> <span id="feewarn"></span> <br><br><b>WIF Private Key: </b> <input type="password" id="wifpkey" class="wideinput" placeholder="WIF PrivateKey"><br><br><button id="analyze">Sign</button><br><br><textarea id="hexout" cols="100" rows="10"></textarea>');
+		  
+		      $(".input").click(function() {
+				console.log(this);
+				$(this).toggleClass("green");
+				if($(this).hasClass("green")){
+					var startval = parseFloat($("#amtsats").val());
+					console.log(startval);
+					var addval = parseFloat($(this).html());
+					console.log(addval);
+					$("#amtsats").val(startval+addval);
+					var calcbtc = (startval+addval)/100000000;
+					$("#btcval").html(calcbtc.toFixed(8)+" BTC");
+					return recalcfees();
+				} else {
+					var startval = parseFloat($("#amtsats").val());
+					var addval = parseFloat($(this).html());
+					$("#amtsats").val(startval-addval);
+					var calcbtc = (startval-addval)/100000000;
+					$("#btcval").html(calcbtc.toFixed(8)+" BTC");
+					return recalcfees();
+				}
+					
+			  });
+			  
+			$(".amountinputs").change(function(){
+				return recalcfees();
+			});  
+			  
+			$("#analyze").click(function(){
+			var selectnum = document.getElementsByClassName("green");
+			var inputlen = selectnum.length;
+			var inputstousearray = [];
+			for(var i=0;i<inputlen;i++){
+				inputstousearray.push(selectnum[i].value);
+			}
+			console.log(inputstousearray);
+			var totalSatoshis = 0;
+			var txb = new b.bitcoin.TransactionBuilder(NETWORK)
+			
+			//need scriptPubKey for adding input
+			let WIF = $("#wifpkey").val(); //private key of p2sh-p2wpkh output
+			let keypair = b.bitcoin.ECPair.fromWIF(WIF, NETWORK);			
+			let pubKey = keypair.getPublicKeyBuffer();
+			let pubKeyHash = b.bitcoin.crypto.hash160(pubKey);
+			let redeemScript = b.bitcoin.script.witnessPubKeyHash.output.encode(pubKeyHash);
+			let redeemScriptHash = b.bitcoin.crypto.hash160(redeemScript);
+			let scriptPubkey = b.bitcoin.script.scriptHash.output.encode(redeemScriptHash);
+			
+			for(var ii=0;ii<inputlen;ii++){
+				var inputtouse = inputstousearray[ii];
+				console.log(dataloop[inputtouse].txid);
+				txb.addInput(dataloop[inputtouse].txid,
+							dataloop[inputtouse].vout,
+							0xffffffff,
+							scriptPubkey)
+				totalSatoshis = parseFloat(totalSatoshis) + parseFloat(dataloop[inputtouse].satoshis);
+				console.log(totalSatoshis);
+			}
+			
+			//add output
+			var toaddress = $("#outputaddr").val();
+			var toaddressamt = $("#outputamt").val();
+			toaddressamt = parseFloat(toaddressamt);
+			var changeaddress = $("#changeaddr").val();
+			var changeaddressamt = $("#changeamt").val();
+			changeaddressamt = parseFloat(changeaddressamt);
+			txb.addOutput(toaddress,toaddressamt);
+			if(changeaddressamt.length<1){
+			} else {
+				if(changeaddress.length<1){
+				} else {
+					txb.addOutput(changeaddress,changeaddressamt);
+				}	
+			}
+			//sign each input
+			for(var iii=0;iii<inputlen;iii++){
+				var inputtouse = inputstousearray[iii];
+				var inputvalue = dataloop[inputtouse].satoshis;
+				txb.sign(iii, keypair, redeemScript, null, inputvalue);
+			}
+			
+			var tx = txb.build();
+			var txhex = tx.toHex();
+			$("#hexout").val(txhex);
+			
+			});  
+		
+	
+});
+
+function recalcfees(){
+	var outputamount = $("#outputamt").val();
+	if(outputamount.length<1){ outputamount=0 }
+	console.log(outputamount);
+	var changeamount = $("#changeamt").val();
+	if(changeamount.length<1){ changeamount=0 }
+	console.log(changeamount);
+	var totalout = parseFloat(changeamount) + parseFloat(outputamount);
+	console.log(totalout);
+	var totalsatsselected = $("#amtsats").val();
+	var minersfee = parseFloat(totalsatsselected) - parseFloat(totalout);
+	console.log(minersfee);
+	$("#feerate").val(minersfee);
+	if(minersfee>outputamount){
+		$('#feerate').css('border-bottom', 'solid 2px red');
+		$("#feewarn").html("Warning your fee is very large");
+	} else {
+	    $('#feerate').css('border-bottom', '');
+		$("#feewarn").html("");
+	}
+}
+
+
+
+</script>
+<br>
+<br>
+
+</body>
+</html>

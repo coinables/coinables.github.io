@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<script type="text/javascript" src="bitcoin.js"></script>
+
+<script src="jquery-3.3.1.min.js"></script>
+<style>
+.input { color: #fff;  height: 50px; background-color: #336699; }
+.green { background-color: #00cc00; }
+</style>
+</head>
+<body>
+<b>Network: </b><select id="networkselect"><option value="testnet">Testnet</option><option value="mainnet">Mainnet</option></select>
+<br><br><b>Address:</b> <input type="text" id="address"> <button id="getaddr">GET UTXOs</button>
+<br><br>
+<textarea id="inputdata" cols="100" rows="10"></textarea><br>
+Copy result and paste into the applicable signor page
+<script>
+$("#getaddr").click(function(){
+	var addr = $("#address").val();
+	var netselect = $("#networkselect").val();
+	var NETWORK = netselect === "testnet" ? "testnet/" : "";
+	var data
+	$.ajax({
+		async: true,
+		type: "GET",
+		url: "https://api.blockchair.com/bitcoin/"+NETWORK+"dashboards/address/"+addr,
+		success: function(result) {
+		  console.log(result.data[addr].utxo.length + " utxos found");
+		  data = result.data[addr].utxo.map(function(item){
+			return {
+			  "txid": item.transaction_hash,
+			  "vout": item.index,
+			  "satoshis": item.value
+			}
+		  })
+		  //output response into the inputdata element
+		 
+		 $("#inputdata").val(JSON.stringify(data, null, 2))
+		  
+		}
+	  });
+});
+
+
+
+
+
+
+</script>
+</body>
+</html>

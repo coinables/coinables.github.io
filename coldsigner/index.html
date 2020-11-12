@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Cold Signer</h1>
+<h3>Step one obtain UTXOs from address you which to spend.</h3>
+<li>Auto Fetch tools (internet required): <a href="online-get-utxos.html">Source A</a> | <a href="online-get-utxos-altsource.html">Source B</a></li>
+<li>Manually obtain and enter transaction ids, v_out(aka n_out), and input values. Use the JSON template below.</li>
+<br>
+Example with One Input:<br>
+<textarea cols="100" rows="10">
+[
+  {
+    "txid": "4c62ee44f2a01e413cf8bd53f81b449a8e37d7b1ba0d39e437fd22ad759636c9",
+    "vout": 1,
+    "satoshis": 9853542000
+  }
+]
+</textarea>
+<br><br>
+Example with Two Inputs:<br>
+<textarea cols="100" rows="10">
+[
+  {
+    "txid": "4c62ee44f2a01e413cf8bd53f81b449a8e37d7b1ba0d39e437fd22ad759636c9",
+    "vout": 1,
+    "satoshis": 9853542000
+  },
+  {
+    "txid": "e97589209d5f2a6fc2ab96b1369c6c824a35cb54b449dc4a56c1b306bd4d9582",
+    "vout": 0,
+    "satoshis": 998900
+  }
+]
+</textarea>
+<br><br>
+<h3>Step 2 - Build and Sign Transaction</h3>
+Make sure you have the inputs in JSON format either by using the auto-fetch tool or be manually entering the data in a JSON format. 
+<br>Paste the JSON formatted text in the appropiate signing tool.<br><br>
+<li>If spending from a legacy address (Starts with a 1) - <a href="offline-sign-legacy.html">offline-sign-legacy.html</a></li><br>
+<li>If spending from a legacy address (Starts with a 3) - <a href="offline-sign-p2sh-segwit.html">offline-sign-p2sh-segwit.html</a></li><br>
+<li>If spending from a legacy address (Starts with a bc) - <a href="offline-sign-bech32.html">offline-sign-bech32.html</a></li><br>
+<h3> Step 3 - Broadcast</h3>
+You can broadcast from your own node as long as your node is synced up to at least the height of the input you are spending. 
+<br><br>
+You can also broadcast with a 3rd party service (<a href="https://live.blockcypher.com/btc-testnet/pushtx/">Blockcypher</a>, Smartbit <a href="https://testnet.smartbit.com.au/txs/pushtx">Testnet</a> | <a href="https://www.smartbit.com.au/txs/pushtx">Mainnet</a>, Blockstream <a href="https://blockstream.info/testnet/tx/push">Testnet</a> | <a href="https://blockstream.info/tx/push">Mainnet</a>
+</body>
+</html>
