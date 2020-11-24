@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html, body{
+	font-family: "Courier New", "Times New Roman", serif;
+}
+.lh{
+	width: 100px;
+	padding: 3px;
+	display: inline-block;
+}
+.rh{
+	width: 550px;
+	padding: 3px;
+	display: inline-block;
+}
+</style>
+<script src="jquery-3.3.1.min.js"></script>
+</head>
+<body>
+<h1>Tiny Explorer</h1>
+<input type="text" placeholder="Address" id="addrQuery"><button onclick="return queryAddr();">Search</button>
+<h2>Blocks:</h2>
+<div id="blocks"></div>
+<h2>Data:</h2>
+<div id="dataOut">
+<b>Difficulty: </b> <input type="text" id="difficulty" readonly><br>
+<b>Hashrate: </b> <input type="text" id="hashrate" readonly><br>
+<b>Unconfirmed: </b> <input type="text" id="unconfirmed" readonly><br>
+<b>Blockheight: </b> <input type="text" id="blockheight" readonly><br>
+<b>Price: </b> <input type="text" id="price" readonly><br>
+</div>
+<script>
+function queryAddr(){
+	var addrInput = $("#addrQuery").val();
+	var url = "addr/?q="+addrInput;
+	window.location.replace(url);
+}
+
+window.onload = function(){
+		
+		$.ajax({
+			async: true,
+			type: "GET",
+			url: "https://sochain.com/api/v2/get_info/BTC",
+			success: function(result) {
+				var dataout = result.data;
+				var diff = dataout.mining_difficulty;
+				var hashr = dataout.hashrate;
+				var unconf = dataout.unconfirmed_txs;
+				var blockh = dataout.blocks;
+				var price = dataout.price;
+				$("#difficulty").val(diff);
+				$("#hashrate").val(hashr);
+				$("#unconfirmed").val(unconf);
+				$("#blockheight").val(blockh);
+				$("#price").val(price);
+				
+				setTimeout(() => {  getBlocks(); }, 2000);
+			}
+		});
+		
+}
+</script>
+<script>
+function getBlocks(){
+	bh = $("#blockheight").val();
+	console.log(bh);
+	$("#blocks").append('<div class="lh"><b>Height</b></div><div class="rh"><b>Blockhash</b></div><br>');
+	for(var i=0;i<10;i++){
+		var thisbh = bh - i;
+		$.ajax({
+				async: false,
+				type: "GET",
+				url: "https://sochain.com/api/v2/get_blockhash/BTC/"+thisbh,
+				success: function(result) {
+					thisData = result.data;
+					$("#blocks").append('<div class="lh"><a href="block/?q='+thisData.block_no+'">'+thisData.block_no+'</a></div><div class="rh">'+thisData.blockhash+'</div><br>');
+					console.log(thisbh);
+				}
+		});	
+		
+	}
+  
+};
+
+</script>
+</body>
+</html>

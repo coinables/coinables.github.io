@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html, body{
+	font-family: "Courier New", "Times New Roman", serif;
+}
+div{
+	padding: 5px;
+}
+.inum{
+	width: 40px;
+	display: inline-block;
+	margin: 0px;
+	border: 1px solid #000;
+}
+.iacct{
+	width: 350px;
+	display: inline-block;
+	margin: 0px;
+	border: 1px solid #000;
+}
+.ivalue{
+	width: 130px;
+	display: inline-block;
+	margin: 0px;
+	border: 1px solid #000;
+}
+.miner{
+	width: 402px;
+	display: inline-block;
+	margin: 0px;
+	border: 1px solid #000;
+}
+
+</style>
+<script src="../jquery-3.3.1.min.js"></script>
+</head>
+<body>
+<h1>Tiny Explorer</h1>
+<input type="text" placeholder="Address" id="addrQuery"><button onclick="return queryAddr();">Search</button>
+<br><br>
+Transaction:  <input type="text" size="80" id="transaction"><br>
+Time:  <input type="text" id="time"><br>
+Block:  <input type="text" size="80" id="block"><br>
+Confirmations:  <input type="text" id="confirmations"><br><br>
+<span style="font-size: 20px;">Senders (inputs):</span><br>
+<div id="senderContainer">
+<div class="inum"><b>#</b></div><div class="iacct"><b>Sender</b></div><div class="ivalue"><b>Value (BTC)</b></div><div class="ivalue"><b>Value (USD)</b></div><br>
+</div>
+
+<br><br>
+<span style="font-size: 20px;">Recipients (outputs):</span><br>
+<div id="recContainer">
+<div class="inum"><b>#</b></div><div class="iacct"><b>Recipient</b></div><div class="ivalue"><b>Value (BTC)</b></div><div class="ivalue"><b>Value (USD)</b></div><br>
+</div>
+<input type="hidden" id="priceholder">
+<script>
+function queryAddr(){
+	var addrInput = $("#addrQuery").val();
+	var url = "../addr/?q="+addrInput;
+	window.location.replace(url);
+}
+
+window.onload = function(){
+	
+	
+	$.ajax({
+		async: false,
+		type: "GET",
+		url: "https://sochain.com/api/v2/get_info/BTC",
+		success: function(out){
+			var priceUSD = out.data.price;
+			$("#priceholder").val(priceUSD);
+		}
+		
+	});
+	
+	
+	let searchParams = new URLSearchParams(window.location.search);
+
+	if(searchParams.has('q')){
+		let param = searchParams.get('q');
+				
+		$.ajax({
+			async: false,
+			type: "GET",
+			url: "https://sochain.com/api/v2/get_tx/BTC/"+param,
+			success: function(result) {
+				api = result.data;
+				$("#transaction").val(api.txid);
+				$("#block").val(api.blockhash);
+				var formattedTime = timeConverter(api.time);
+				$("#time").val(formattedTime);
+				$("#confirmations").val(api.confirmations);
+				var countInputs = api.inputs.length;
+				var countOutputs = api.outputs.length;
+				var sumInputs = 0;
+				var sumInputsUSD = 0;
+				var sumOutputs = 0;
+				var sumOutputsUSD = 0;
+				
+				for(var i=0;i<countInputs;i++){
+					var getUSD = $("#priceholder").val();
+					var inVal = api.inputs[i].value;
+					var getUSDFloat = parseFloat(getUSD);
+					var inValFloat = parseFloat(inVal);
+					sumInputs += inValFloat;
+					var usdAmt = getUSDFloat * inValFloat; 
+					sumInputsUSD += usdAmt;
+					$("#senderContainer").append('<div class="inum">'+i+'</div><div class="iacct"><a href="../addr/?q='+api.inputs[i].address+'">'+api.inputs[i].address+'</a></div><div class="ivalue">'+api.inputs[i].value+'</div><div class="ivalue">$'+usdAmt.toFixed(2)+'</div><br>');
+				}
+				
+				for(var i=0;i<countOutputs;i++){
+					var usdOutAmt = parseFloat($("#priceholder").val()) * parseFloat(api.outputs[i].value);
+					sumOutputs += parseFloat(api.outputs[i].value);
+					sumOutputsUSD += usdOutAmt;
+					$("#recContainer").append('<div class="inum">'+i+'</div><div class="iacct"><a href="../addr/?q='+api.outputs[i].address+'">'+api.outputs[i].address+'</a></div><div class="ivalue">'+api.outputs[i].value+'</div><div class="ivalue">$'+usdOutAmt.toFixed(2)+'</div><br>');
+				}
+				var minerfee = sumInputs - sumOutputs;
+				var minerfeeUSD = sumInputsUSD - sumOutputsUSD;
+				$("#recContainer").append('<div class="miner"><b>Miners Fee</b></div><div class="ivalue">'+minerfee.toFixed(8)+'</div><div class="ivalue">$'+minerfeeUSD.toFixed(2)+'</div><br>');
+				
+			}
+		});	
+			
+	}
+}	
+
+function timeConverter(UNIX_timestamp){
+  var a = new Date(UNIX_timestamp * 1000);
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = a.getDate();
+  var hour = a.getHours();
+  var min = a.getMinutes();
+  var sec = a.getSeconds();
+  var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+  return time;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html, body{
+	font-family: "Courier New", "Times New Roman", serif;
+}
+</style>
+<script src="../jquery-3.3.1.min.js"></script>
+</head>
+<body>
+<h1>Tiny Explorer</h1>
+<input type="text" placeholder="Address" id="addrQuery"><button onclick="return queryAddr();">Search</button>
+<h2>Block <span id="blockHdr"></span></h2>
+<a href="">Previous Block</a> | <a href="">Next Block</a> 
+<br><br>
+<b>Blockhash:</b> <input type="text" id="blockhash" size="80"><br>
+<b>Is Orphan:</b> <input type="text" id="isOrphan"><br>
+<b>Time:</b> <input type="text" id="time"><br>
+<b>Size:</b> <input type="text" id="size"><br>
+<h2>Transactions: </h2>
+<script>
+function queryAddr(){
+	var addrInput = $("#addrQuery").val();
+	var url = "../addr/?q="+addrInput;
+	window.location.replace(url);
+}
+
+window.onload = function(){
+	let searchParams = new URLSearchParams(window.location.search);
+
+	if(searchParams.has('q')){
+		let param = searchParams.get('q');
+		
+		$("#blockHdr").html(param);
+		
+		$.ajax({
+			async: true,
+			type: "GET",
+			url: "https://sochain.com/api/v2/get_block/BTC/"+param,
+			success: function(result) {
+				api = result.data;
+				$("#blockhash").val(api.blockhash);
+				var formattedTime = timeConverter(api.time);
+				$("#time").val(formattedTime);
+				$("#isOrphan").val(api.is_orphan);
+				var formattedSize = formatBytes(api.size, 2);
+				$("#size").val(formattedSize);
+				//next_blockhash = api.next_blockhash;
+				//previous_blockhash = api.previous_blockhash;
+				var txslength = api.txs.length;
+				for(var i=0;i<txslength;i++){
+					$("#transactionsOut").append('<a href="../tx/?q='+api.txs[i]+'">'+api.txs[i]+'</a><br>')
+				}
+				
+			}
+		});	
+	}
+}
+
+function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+function timeConverter(UNIX_timestamp){
+  var a = new Date(UNIX_timestamp * 1000);
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = a.getDate();
+  var hour = a.getHours();
+  var min = a.getMinutes();
+  var sec = a.getSeconds();
+  var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+  return time;
+}
+
+</script>
+<div id="transactionsOut">
+</div>
+
+</div>
+</body>
+</html>

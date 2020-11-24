@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html, body{
+	font-family: "Courier New", "Times New Roman", serif;
+}
+div{
+	padding: 5px;
+}
+.inum{
+	width: 40px;
+	display: inline-block;
+	margin: 0px;
+	border: 1px solid #000;
+}
+.iacct{
+	width: 680px;
+	display: inline-block;
+	margin: 0px;
+	border: 1px solid #000;
+}
+.ivalue{
+	width: 220px;
+	display: inline-block;
+	margin: 0px;
+	border: 1px solid #000;
+}
+
+
+</style>
+<script src="../jquery-3.3.1.min.js"></script>
+</head>
+<body>
+<h1>Tiny Explorer</h1>
+<input type="text" placeholder="Address" id="addrQuery"><button onclick="return queryAddr();">Search</button>
+<br><br>
+<h2>Address <span id="addrHdr"></span></h2>
+Balance:  <input type="text" id="balance"><br>
+Total Received:  <input type="text" id="totreceived"><br>
+Pending:  <input type="text" id="pending"><br>
+# of Transactions:  <input type="text" id="txsnum"><br><br>
+
+<h2>Transactions</h2>
+<div id="txsContainer">
+<div class="inum"><b>#</b></div><div class="iacct"><b>Transaction ID</b></div><div class="ivalue"><b>Time</b></div><br>
+</div>
+
+<input type="hidden" id="priceholder">
+<script>
+function queryAddr(){
+	var addrInput = $("#addrQuery").val();
+	var url = "../addr/?q="+addrInput;
+	window.location.replace(url);
+}
+
+window.onload = function(){
+	
+	
+	$.ajax({
+		async: false,
+		type: "GET",
+		url: "https://sochain.com/api/v2/get_info/BTC",
+		success: function(out){
+			var priceUSD = out.data.price;
+			$("#priceholder").val(priceUSD);
+		}
+		
+	});
+	
+	
+	let searchParams = new URLSearchParams(window.location.search);
+
+	if(searchParams.has('q')){
+		let param = searchParams.get('q');
+			$("#addrHdr").html(param);
+		$.ajax({
+			async: false,
+			type: "GET",
+			url: "https://sochain.com/api/v2/address/BTC/"+param,
+			success: function(result) {
+				api = result.data;
+				$("#balance").val(api.balance);
+				$("#totreceived").val(api.received_value);
+				$("#pending").val(api.pending_value);
+				$("#txsnum").val(api.total_txs);
+				
+				var txslength = api.txs.length;
+				for(var i=0;i<txslength;i++){
+					var formattime = timeConverter(api.txs[i].time);
+					$("#txsContainer").append('<div class="inum">'+i+'</div><div class="iacct"><a href="../tx/?q='+api.txs[i].txid+'">'+api.txs[i].txid+'</a></div><div class="ivalue">'+formattime+'</div><br>');
+				}
+			}
+		});	
+			
+	}
+}	
+
+function timeConverter(UNIX_timestamp){
+  var a = new Date(UNIX_timestamp * 1000);
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = a.getDate();
+  var hour = a.getHours();
+  var min = a.getMinutes();
+  var sec = a.getSeconds();
+  var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+  return time;
+}
+
+</script>
+</body>
+</html>
