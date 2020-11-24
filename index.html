@@ -2,24 +2,8 @@
 <html>
 <head>
 <style>
-body{
+html,body{
 	padding: 20px;
-}
-h1{
-	color: #fff;
-	padding-left: 12px;
-}
-input.form-control{
-	width: 500px;
-}
-.panel-default{
-	margin: 5px;
-}
-.wideinput{
-	width: 500px;
-}
-#afterclick{
-	display: none;
 }
 </style>
 
@@ -29,56 +13,33 @@ input.form-control{
 <link rel="stylesheet" href="bootstrap.min.css">
 </head>
 <body>
-<nav class="navbar navbar-default">
-	<h1>Sweep a Private Key</h1>
-</nav>
-<h2>Sweep a Bitcoin private key to a new address.</h2>
-<p>Want to spend without sweeping? Choose which UTXOs to spend with <a href="wallet">/wallet</a></p>
-<b>Network: </b><select id="network" class="form-control wideinput">
-<option class="form-control" value="test">Testnet</option>
-<option class="form-control" value="main">Mainnet</option>
-</select>
-<br>
-<b>Address Type: </b><select id="addrtype" onchange="return showaddr();" class="form-control wideinput">
-<option class="form-control" value="p2pkh">Legacy (Starts with 1..)</option>
-<option class="form-control" value="p2sh-p2wpkh">P2SH Segwit (Starts with 3..)</option>
-<option class="form-control" value="p2wpkh">Native Segwit (Starts with bc1..)</option>
-</select>
-<br>
-<br>
 
-<b>Private Key: </b><input type="password" id="inputwif" onchange="return showaddr();" class="wideinput form-control" required>
-<input readonly id="queryaddr" class="wideinput form-control">
+<h2>Here are some open source bitcoin web apps I have built:</h2>
 <br>
-<b>Destination Address: </b><input type="text" id="outputaddr" class="form-control wideinput">
+<p>Feel free to fork any of these projects.</p>
+
 <br>
-<button class="btn btn-success" id="getUTXO">Sweep</button>
-<br><br>
-<div id="loading"></div>
-<br><br>
 <div class="panel panel-default">
 <div class="panel-body">
-	<div id="afterclick">
-
-		<input type="hidden" id="inputdata">
-		<input type="hidden" id="inputaddr">
-		<input type="hidden" id="inputaddrp2sh">
-		<input type="hidden" id="inputaddrbech32">
-		
-
-		<b>Fee (Sats per byte): </b><input type="number" id="satperbyte" class="form-control" value="3">
-		<br>
-		<button id="sweepbtn" class="btn btn-info">Sweep All Funds To Destination Address</button>
-		<br>
-	<div id="results"></div>
-	</div>
-
+<ul>
+	<li><a href="https://segwitaddress.org">SegwitAddress.org</a> - Segwit paper wallet app.</li>
+	<li><a href="https://coinables.github.io/explorer">Explorer</a> - Simple bitcoin block explorer.</li>
+	<li><a href="https://coinables.github.io/bip39">BIP39 Code Converter</a> - Simple BIP39 mnemonic code converter.</li>
+	<li><a href="https://coinables.github.io/wallet">JSWallet</a> - Javascript wallet.</li>
+	<li><a href="https://coinables.github.io/sweepkey">SweepKey</a> - Tool for sweeping private keys.</li>
+	<li><a href="https://coinables.github.io/utxobucket">UTXOBucket</a> - Experimental wallet that stores UTXO data for only addresses in your wallet.</li>
+	<li><a href="https://coinables.github.io/multisig">MultiSig Paper Wallet</a> - Multisig tool with Transaction Builder and Offline Key Signer.</li>
+	<li><a href="https://coinables.github.io/dragdrop">Drag-Drop</a> - Create private keys by drag and dropping a file or image.</li>
+	<li><a href="https://coinables.github.io/coldsigner">Cold Signer</a> - Tool to build and sign transactions offline.</li>
+</ul>
+<b>JSWallet and UTXOBucket currently both share the same storage space and cannot be used together without deleting your local browser storage when changing between apps.</b>
+<br><br>
 </div>
 </div>
 
 <div class="alert alert-dismissible alert-danger" id="feeWarn">
   <a href="#" onclick="document.getElementById('feeWarn').style.display='none';return false;" class="close" data-dismiss="alert">X</a>
-  <strong>Fees Notice:</strong><br> <b>Every transaction is set with a 3 satoshi per byte mining fee by default. It is your responsibility to change the fee during times of high transaction volume.</b> 
+  <strong>Use At Your Own Risk:</strong><br> Every app on this page is for educational purposes only. There are no guarantees. 
 </div>
     <br>
     <div class="alert alert-dismissible alert-warning" id="pkeyWarn">
@@ -87,377 +48,8 @@ input.form-control{
   <p>Although this site does not save, store, or 
 log any private keys, it is very important not to re-use a private key of an address entered on any website including this site. 
 Whenever entering a private key into any online form you should assume that address is no longer safe. </p>
-<p><b>You can <a href="https://github.com/coinables/sweepkey/releases">download this site</a> and run it on your local machine for more security.</b></p>
 </div>
-	<p>Other Related Tools:</p>
-	<a href="https://coinables.github.io/utxobucket">UTXOBucket</a><br>
-	<a href="https://coinables.github.io/multisig">MultiSig Paper Wallet with Transaction Builder and Offline Key Signor</a><br>
-	<a href="https://coinables.github.io/dragdrop">Drag-Drop - create private keys from a file or image.</a><br>
-<script>
-
-function showaddr(){
-	var keyinput = $("#inputwif").val();
-	var keyinputlength = keyinput.length;
-	if(keyinputlength>24){
-		var netselect = $("#network").val();
-		var NETWORKB = netselect === "test" ? "testnet" : "";
-		var newkeypair = buidl.getDetails(keyinput, NETWORKB);
-		
-		var addrtype = $("#addrtype").val();
-	
-		if(addrtype ==="p2wpkh"){
-			$("#queryaddr").val(newkeypair.p2wpkh);
-		}
-		if(addrtype ==="p2sh-p2wpkh"){
-			$("#queryaddr").val(newkeypair.p2shp2wpkh);
-		}
-		if(addrtype ==="p2pkh"){
-			$("#queryaddr").val(newkeypair.p2pkh);
-		}
-	}	
-}
-
-function getUTXOs(){
 	
 	
-	//create key pair from WIF
-	var netselect = $("#network").val();
-	var NETWORKB = netselect === "test" ? "testnet" : "";
-	var NETWORKAPI = netselect === "test" ? "testnet-api" : "api";
-	
-	var thiswifinput = $("#inputwif").val();
-	
-	var keypair = buidl.getDetails(thiswifinput, NETWORKB);
-	$("#inputaddr").val(keypair.p2pkh);
-	$("#inputaddrp2sh").val(keypair.p2shp2wpkh);
-	$("#inputaddrbech32").val(keypair.p2wpkh);
-	
-	
-	//which addr type
-	var addrtype = $("#addrtype").val();
-	
-	if(addrtype ==="p2wpkh"){
-		$("#queryaddr").val(keypair.p2wpkh);
-		
-		document.getElementById("loading").innerHTML = '<img src="loader.gif" width="90"><br>Searching for Unspent Outputs in '+keypair.p2wpkh;
-
-		//query bech32 address for inputs
-			
-		var data
-		$.ajax({
-			async: true,
-			type: "GET",
-			url: "https://"+NETWORKAPI+".smartbit.com.au/v1/blockchain/address/"+keypair.p2wpkh+"/unspent",
-			success: function(result) {
-			  console.log(result.unspent.length + " utxos found");
-			  data = result.unspent.map(function(item){
-				return {
-				  "txid": item.txid,
-				  "vout": item.n,
-				  "satoshis": item.value_int
-				}
-			  })
-			  
-			  //check if utxos were found
-			  if(result.unspent.length === 0){
-				document.getElementById("loading").innerHTML = 'Cound Not Find Unspent Outputs';
-			  } else {
-				//output response into the inputdata element
-				var totalSatoshis = data.reduce(function(total, item){return total += item.satoshis}, 0);
-				var totalBTC = totalSatoshis / 100000000;
-				totalBTC = totalBTC.toFixed(8);
-				$("#inputdata").val(JSON.stringify(data, null, 2))
-				document.getElementById("afterclick").style.display = "block";
-				document.getElementById("loading").innerHTML = 'Found Unspent Outputs Totaling '+totalSatoshis+' Satoshis ('+totalBTC+' BTC)';
-			  }
-			  
-			}
-		  });
-	
-	
-	}
-	
-	if(addrtype ==="p2sh-p2wpkh"){
-		$("#queryaddr").val(keypair.p2shp2wpkh);
-		
-		document.getElementById("loading").innerHTML = '<img src="loader.gif" width="90"><br>Searching for Unspent Outputs in '+keypair.p2shp2wpkh;
-
-		//query bech32 address for inputs
-			
-		var data
-		$.ajax({
-			async: true,
-			type: "GET",
-			url: "https://"+NETWORKAPI+".smartbit.com.au/v1/blockchain/address/"+keypair.p2shp2wpkh+"/unspent",
-			success: function(result) {
-			  console.log(result.unspent.length + " utxos found");
-			  data = result.unspent.map(function(item){
-				return {
-				  "txid": item.txid,
-				  "vout": item.n,
-				  "satoshis": item.value_int
-				}
-			  })
-			  
-			  //check if utxos were found
-			  if(result.unspent.length === 0){
-				document.getElementById("loading").innerHTML = 'Cound Not Find Unspent Outputs';
-			  } else {
-				//output response into the inputdata element
-				var totalSatoshis = data.reduce(function(total, item){return total += item.satoshis}, 0);
-				var totalBTC = totalSatoshis / 100000000;
-				totalBTC = totalBTC.toFixed(8);
-				$("#inputdata").val(JSON.stringify(data, null, 2))
-				document.getElementById("afterclick").style.display = "block";
-				document.getElementById("loading").innerHTML = 'Found Unspent Outputs Totaling '+totalSatoshis+' Satoshis ('+totalBTC+' BTC)';
-			  }
-			  
-			}
-		  });
-	
-	
-	}
-	
-	if(addrtype ==="p2pkh"){
-		$("#queryaddr").val(keypair.p2pkh);
-		
-		document.getElementById("loading").innerHTML = '<img src="loader.gif" width="90"><br>Searching for Unspent Outputs in '+keypair.p2pkh;
-
-		//query bech32 address for inputs
-			
-		var data
-		$.ajax({
-			async: true,
-			type: "GET",
-			url: "https://"+NETWORKAPI+".smartbit.com.au/v1/blockchain/address/"+keypair.p2pkh+"/unspent",
-			success: function(result) {
-			  console.log(result.unspent.length + " utxos found");
-			  data = result.unspent.map(function(item){
-				return {
-				  "txid": item.txid,
-				  "vout": item.n,
-				  "satoshis": item.value_int
-				}
-			  })
-			  
-			  //check if utxos were found
-			  if(result.unspent.length === 0){
-				document.getElementById("loading").innerHTML = 'Cound Not Find Unspent Outputs';
-			  } else {
-				//output response into the inputdata element
-				var totalSatoshis = data.reduce(function(total, item){return total += item.satoshis}, 0);
-				var totalBTC = totalSatoshis / 100000000;
-				totalBTC = totalBTC.toFixed(8);
-				$("#inputdata").val(JSON.stringify(data, null, 2))
-				document.getElementById("afterclick").style.display = "block";
-				document.getElementById("loading").innerHTML = 'Found Unspent Outputs Totaling '+totalSatoshis+' Satoshis ('+totalBTC+' BTC)';
-			  }
-			  
-			}
-		  });
-	
-	
-	
-	}
-	
-}
-
-function sweepUTXOs(){
-	var netselect = $("#network").val();
-	var NETWORKB = netselect === "test" ? b.bitcoin.networks.testnet : b.bitcoin.networks.bitcoin;
-	var thiswifinput = $("#inputwif").val();
-	var queryaddress = $("#queryaddr").val();
-	var firstaddr = queryaddress.substring(0,1);
-	
-	if((firstaddr==="1")||(firstaddr==="m")){
-		var keyPair = b.bitcoin.ECPair.fromWIF(thiswifinput, NETWORKB);
-		
-		var inputData = $("#inputdata").val();
-		inputData = JSON.parse(inputData);
-
-		//fetch to address
-		var toAddressBox = $("#outputaddr").val();
-		var toAddress = toAddressBox;
-		//check if address filled out
-		if (toAddress == "") {
-		alert("Please Enter Address to send to!")
-		return
-		}
-
-		//get fee rate from input
-		var satPerByte = $("#satperbyte").val()
-		if (satPerByte == "") {
-		alert("Please enter Satoshi Per Byte Fee Rate!")
-		return
-		}
-		satPerByte = parseFloat(satPerByte)
-
-		//build transaction from utxo set
-		var txb = new b.bitcoin.TransactionBuilder(NETWORKB)
-		for (var i = 0; i < inputData.length; i++) {
-		txb.addInput(inputData[i].txid,
-			   inputData[i].vout)
-		}
-		//calculate tx size and fee
-		var estimatedByteCount = getByteCountSegwitNative(inputData.length, 1)
-		console.log("estimatedByteCount"+estimatedByteCount);
-		var estimatedFeeSatoshis = parseFloat(estimatedByteCount * satPerByte)
-		console.log("estimatedFeeSatoshis"+estimatedFeeSatoshis);
-		var totalSatoshis = inputData.reduce(function(total, item){return total += item.satoshis}, 0)
-		console.log("totalSatoshis"+totalSatoshis);
-		var totalSatoshisMinusFee = totalSatoshis - estimatedFeeSatoshis
-		console.log("totalSatoshisMinusFee"+totalSatoshisMinusFee);
-
-		//output
-		txb.addOutput(toAddress, totalSatoshisMinusFee);
-
-		//sign all inputs
-		for (var i = 0; i < inputData.length; i++) {
-		txb.sign(i, keyPair)
-		}
-
-		var tx = txb.build()
-		var tx_txid = tx.getId()
-		var tx_raw = tx.toHex()
-	  }
-	  
-	  if((firstaddr==="3")||(firstaddr==="2")){
-		var keyPair = b.bitcoin.ECPair.fromWIF(thiswifinput, NETWORKB);
-		var pubKey = keyPair.getPublicKeyBuffer();
-		var pubKeyHash = b.bitcoin.crypto.hash160(pubKey);
-		var redeemScript = b.bitcoin.script.witnessPubKeyHash.output.encode(pubKeyHash);
-		var redeemScriptHash = b.bitcoin.crypto.hash160(redeemScript);
-		var scriptPubkey = b.bitcoin.script.scriptHash.output.encode(redeemScriptHash);
-		
-		var inputData = $("#inputdata").val();
-		inputData = JSON.parse(inputData);
-
-		//fetch to address
-		var toAddressBox = $("#outputaddr").val();
-		var toAddress = toAddressBox;
-		//check if address filled out
-		if (toAddress == "") {
-		alert("Please Enter Address to send to!")
-		return
-		}
-
-		//get fee rate from input
-		var satPerByte = $("#satperbyte").val()
-		if (satPerByte == "") {
-		alert("Please enter Satoshi Per Byte Fee Rate!")
-		return
-		}
-		satPerByte = parseFloat(satPerByte)
-
-		//build transaction from utxo set
-		var txb = new b.bitcoin.TransactionBuilder(NETWORKB)
-		for (var i = 0; i < inputData.length; i++) {
-		txb.addInput(inputData[i].txid,
-			   inputData[i].vout,
-			   0xffffffff,
-			   scriptPubkey)
-		}
-		//calculate tx size and fee
-		var estimatedByteCount = getByteCountSegwitNative(inputData.length, 1)
-		console.log("estimatedByteCount"+estimatedByteCount);
-		var estimatedFeeSatoshis = parseFloat(estimatedByteCount * satPerByte)
-		console.log("estimatedFeeSatoshis"+estimatedFeeSatoshis);
-		var totalSatoshis = inputData.reduce(function(total, item){return total += item.satoshis}, 0)
-		console.log("totalSatoshis"+totalSatoshis);
-		var totalSatoshisMinusFee = totalSatoshis - estimatedFeeSatoshis
-		console.log("totalSatoshisMinusFee"+totalSatoshisMinusFee);
-
-		//output
-		txb.addOutput(toAddress, totalSatoshisMinusFee);
-
-		//sign all inputs
-		for (var i = 0; i < inputData.length; i++) {
-		txb.sign(i, keyPair, redeemScript, null, inputData[i].satoshis)
-		}
-
-		var tx = txb.build()
-		var tx_txid = tx.getId()
-		var tx_raw = tx.toHex()
-	  }
-	  if((firstaddr==="b")||(firstaddr==="t")){
-		var keyPair = b.bitcoin.ECPair.fromWIF(thiswifinput, NETWORKB);
-		var pubKey = keyPair.getPublicKeyBuffer();
-		var pubKeyHash = b.bitcoin.crypto.hash160(pubKey);
-		var scriptPubKey = b.bitcoin.script.witnessPubKeyHash.output.encode(pubKeyHash);
-		
-		var inputData = $("#inputdata").val();
-		inputData = JSON.parse(inputData);
-
-		//fetch to address
-		var toAddressBox = $("#outputaddr").val();
-		var toAddress = toAddressBox;
-		//check if address filled out
-		if (toAddress == "") {
-		alert("Please Enter Address to send to!")
-		return
-		}
-
-		//get fee rate from input
-		var satPerByte = $("#satperbyte").val()
-		if (satPerByte == "") {
-		alert("Please enter Satoshi Per Byte Fee Rate!")
-		return
-		}
-		satPerByte = parseFloat(satPerByte)
-
-		//build transaction from utxo set
-		var txb = new b.bitcoin.TransactionBuilder(NETWORKB)
-		for (var i = 0; i < inputData.length; i++) {
-		txb.addInput(inputData[i].txid,
-			   inputData[i].vout,
-			   0xffffffff,
-			   scriptPubKey)
-		}
-		//calculate tx size and fee
-		var estimatedByteCount = getByteCountSegwitNative(inputData.length, 1)
-		console.log("estimatedByteCount"+estimatedByteCount);
-		var estimatedFeeSatoshis = parseFloat(estimatedByteCount * satPerByte)
-		console.log("estimatedFeeSatoshis"+estimatedFeeSatoshis);
-		var totalSatoshis = inputData.reduce(function(total, item){return total += item.satoshis}, 0)
-		console.log("totalSatoshis"+totalSatoshis);
-		var totalSatoshisMinusFee = totalSatoshis - estimatedFeeSatoshis
-		console.log("totalSatoshisMinusFee"+totalSatoshisMinusFee);
-
-		//output
-		txb.addOutput(toAddress, totalSatoshisMinusFee);
-
-		//sign all inputs
-		for (var i = 0; i < inputData.length; i++) {
-		txb.sign(i, keyPair, null, null, inputData[i].satoshis)
-		}
-
-		var tx = txb.build()
-		var tx_txid = tx.getId()
-		var tx_raw = tx.toHex()
-	  }
-	
-	
-	$("#results").html('<br>Transaction created, <b>BUT NOT BROADCAST</b> you are responsible for broadcasting your transaction with a node, wallet, or 3rd party service (<a href="https://live.blockcypher.com/btc-testnet/pushtx/">Blockcypher</a>, Smartbit <a href="https://testnet.smartbit.com.au/txs/pushtx">Testnet</a> | <a href="https://www.smartbit.com.au/txs/pushtx">Mainnet</a>, Blockstream <a href="https://blockstream.info/testnet/tx/push">Testnet</a> | <a href="https://blockstream.info/tx/push">Mainnet</a>).<br><br>Raw Transaction To Broadcast:<br><input class="form-control wideinput" id="outhexraw" value="'+tx_raw+'" style="display: inline-block;"><button id="copy" class="btn btn-warning">Copy</button><br><br>' );
-	
-	document.querySelector("#copy").addEventListener("click", copy);
-}
-
-function copy() {
-  var copyText = document.querySelector("#outhexraw");
-  copyText.select();
-  document.execCommand("copy");
-  alert("Copied!");
-}
-
-function getByteCountSegwitNative(inputCount,outputCount) {
-  var inputSize = 42 + (68 * inputCount)
-  var outputSize = 31
-  return Math.ceil(inputSize + outputSize)
-}  
-
-
-$("#getUTXO").on("click",getUTXOs);
-$("#sweepbtn").on("click",sweepUTXOs);
-</script>
 </body>
 </html>
