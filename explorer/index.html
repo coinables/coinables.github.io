@@ -15,12 +15,18 @@ html, body{
 	padding: 3px;
 	display: inline-block;
 }
+#fork{
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	display: inline-block;
+}
 </style>
 <script src="jquery-3.3.1.min.js"></script>
 </head>
 <body>
 <h1>Tiny Explorer</h1>
-<input type="text" placeholder="Address" id="addrQuery"><button onclick="return queryAddr();">Search</button>
+<input type="text" placeholder="Address or TXID" id="addrQuery"><button onclick="return queryAddr();">Search</button>
 <h2>Blocks:</h2>
 <div id="blocks"></div>
 <h2>Data:</h2>
@@ -31,10 +37,17 @@ html, body{
 <b>Blockheight: </b> <input type="text" id="blockheight" readonly><br>
 <b>Price: </b> <input type="text" id="price" readonly><br>
 </div>
+<div id="fork"><a href="https://github.com/coinables/coinables.github.io/tree/master/explorer"><img loading="lazy" width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" class="attachment-full size-full" alt="Fork me on GitHub" data-recalc-dims="1"></a></div>
 <script>
 function queryAddr(){
 	var addrInput = $("#addrQuery").val();
-	var url = "addr/?q="+addrInput;
+	if(addrInput.length === 64){
+		//query txid instead of address
+		var sub = "tx";
+	} else {
+		var sub = "addr";
+	}
+	var url = "../"+sub+"/?q="+addrInput;
 	window.location.replace(url);
 }
 

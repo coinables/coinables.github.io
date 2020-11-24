@@ -10,9 +10,9 @@ html, body{
 </head>
 <body>
 <h1>Tiny Explorer</h1>
-<input type="text" placeholder="Address" id="addrQuery"><button onclick="return queryAddr();">Search</button>
+<input type="text" placeholder="Address or TXID" id="addrQuery"><button onclick="return queryAddr();">Search</button>
 <h2>Block <span id="blockHdr"></span></h2>
-<a href="">Previous Block</a> | <a href="">Next Block</a> 
+<span id="prevBlk"></span> | <span id="nextBlk"></span>
 <br><br>
 <b>Blockhash:</b> <input type="text" id="blockhash" size="80"><br>
 <b>Is Orphan:</b> <input type="text" id="isOrphan"><br>
@@ -22,7 +22,13 @@ html, body{
 <script>
 function queryAddr(){
 	var addrInput = $("#addrQuery").val();
-	var url = "../addr/?q="+addrInput;
+	if(addrInput.length === 64){
+		//query txid instead of address
+		var sub = "tx";
+	} else {
+		var sub = "addr";
+	}
+	var url = "../"+sub+"/?q="+addrInput;
 	window.location.replace(url);
 }
 
@@ -33,6 +39,10 @@ window.onload = function(){
 		let param = searchParams.get('q');
 		
 		$("#blockHdr").html(param);
+		let nextBlk = parseInt(param) +1;
+		let prevBlk = param -1;
+		$("#prevBlk").html('<a href="../block/?q='+prevBlk+'">Previous Block</a>');
+		$("#nextBlk").html('<a href="../block/?q='+nextBlk+'">Next Block</a>');
 		
 		$.ajax({
 			async: true,

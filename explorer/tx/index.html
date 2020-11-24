@@ -38,7 +38,7 @@ div{
 </head>
 <body>
 <h1>Tiny Explorer</h1>
-<input type="text" placeholder="Address" id="addrQuery"><button onclick="return queryAddr();">Search</button>
+<input type="text" placeholder="Address or TXID" id="addrQuery"><button onclick="return queryAddr();">Search</button>
 <br><br>
 Transaction:  <input type="text" size="80" id="transaction"><br>
 Time:  <input type="text" id="time"><br>
@@ -58,7 +58,13 @@ Confirmations:  <input type="text" id="confirmations"><br><br>
 <script>
 function queryAddr(){
 	var addrInput = $("#addrQuery").val();
-	var url = "../addr/?q="+addrInput;
+	if(addrInput.length === 64){
+		//query txid instead of address
+		var sub = "tx";
+	} else {
+		var sub = "addr";
+	}
+	var url = "../"+sub+"/?q="+addrInput;
 	window.location.replace(url);
 }
 
