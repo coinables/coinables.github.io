@@ -1,0 +1,1 @@
+Just a regular cafe house template.
