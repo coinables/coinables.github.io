@@ -124,9 +124,11 @@ holder.ondrop = function(event) {
   var reader = new FileReader();
 
   reader.onload = function(event) {	
-    	var binary = event.target.result;
-	var newPair = buidl.createFrom(binary);
-    	var bech32 = newPair.p2wpkh;
+    var binary = event.target.result;
+	var shaHash = buidl.sha256(binary,1);
+	console.log(shaHash);
+	var newPair = buidl.createFrom(shaHash);
+    var bech32 = newPair.p2wpkh;
 	var addr = newPair.p2pkh;
 	var p2shwit = newPair.p2shp2wpkh;
 	var pkey = newPair.pk;
