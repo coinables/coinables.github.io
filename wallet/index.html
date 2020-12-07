@@ -124,7 +124,7 @@ html,body{
 			 
 			 console.log(historyreturn);
 			 
-			 var outhtml = '<table><tr><td class="outputheader wideinput">Address</td><td class="outputheader">Satoshis</td><td class="outputheader">Received</td><td class="outputheader">First Seen</td><td class="outputheader">Last Spent</td><td class="outputheader">Label</td></tr>';
+			 var outhtml = '<table><tr><td class="outputheader wideinput">Address</td><td class="outputheader">Satoshis</td><td class="outputheader">Received</td><td class="outputheader">Last Received</td><td class="outputheader">Last Spent</td><td class="outputheader">Label</td></tr>';
 			 
 			 for(var i=0;i<balanceslength;i++){
 			 
@@ -144,7 +144,7 @@ html,body{
 					}
 				}
 			 				
-				outhtml += '<tr><td><input type="text" class="wideinput" value="'+Object.keys(historyreturn)[i]+'" id="'+i+'"></td><td><input type="number" value="'+historyreturn[Object.keys(historyreturn)[i]].balance+'" readonly></td><td><input type="number" value="'+historyreturn[Object.keys(historyreturn)[i]].received+'" readonly></td><td><input type="text" value="'+historyreturn[Object.keys(historyreturn)[i]].first_seen_receiving+'" readonly></td><td><input type="text" value="'+historyreturn[Object.keys(historyreturn)[i]].last_seen_spending+'" readonly></td><td><input type="text" value="'+keylabel+'" readonly></td></tr>';
+				outhtml += '<tr><td><input type="text" class="wideinput" value="'+Object.keys(historyreturn)[i]+'" id="'+i+'"></td><td><input type="number" value="'+historyreturn[Object.keys(historyreturn)[i]].balance+'" readonly></td><td><input type="number" value="'+historyreturn[Object.keys(historyreturn)[i]].received+'" readonly></td><td><input type="text" value="'+historyreturn[Object.keys(historyreturn)[i]].last_seen_receiving+'" readonly></td><td><input type="text" value="'+historyreturn[Object.keys(historyreturn)[i]].last_seen_spending+'" readonly></td><td><input type="text" value="'+keylabel+'" readonly></td></tr>';
 			 }
 			 
 			 outhtml += '</table>';
