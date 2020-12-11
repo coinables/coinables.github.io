@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+html, body{
+	background-color: #F8F8F8;
+	margin: 0;
+	padding: 0;
+	font-family: Lato,Lucida Grande,Lucida Sans Unicode;
+}
+#cap{
+	padding: .25em;
+	border: 1px solid #000;
+	border-radius: .125em;
+	left: 10px;
+	top: 10px;
+	position: relative;
+}
+#hdr{
+	display: block;
+	box-shadow: 0 0 0.25em 0 rgba(0,0,0,.25);
+	padding: 10px;
+	font-size: 1.5em;
+}
+#main{
+	text-align: center;
+	font-size: 2em;
+}
+#main input{
+	padding: .25em;
+	border: 1.5px solid #AAA;
+	border-radius: .125em;
+	font-size: 2em;
+	box-shadow: inset 0px 1px 8px rgba(0, 0, 0, 0.2);
+	text-align: center;
+}
+.btcin{
+	width: 75px;
+}
+.usdin{
+	width: 200px;
+}
+</style>
+</head>
+<body>
+<div id="hdr"><span id="cap">COINABLES</span><center>Simple Bitcoin Converter
+</center></div>
+<div style="height: 200px;"></div>
+<div id="main">
+<input type="text" id="btc" class="btcin" value="1" onchange="return btcSrc();"> BTC = <input type="text" id="usd" class="usdin" onchange="return switchSrc();"> USD
+</div>
+<script>
+storelast = "";
+switcher = 0;
+
+function switchSrc(){
+  var usdamt = document.getElementById("usd").value;
+  var btcamt = usdamt / storelast;
+  btcamt = btcamt.toFixed(8);
+  document.getElementById("btc").value = btcamt;
+  switcher = 1;
+  inputLength();
+  fadebtc();
+  document.title = btcamt+" BTC";
+ } 
+function btcSrc(){
+  var btcamt = document.getElementById("btc").value;
+	var usdamt = btcamt * storelast;
+	usdamt = usdamt.toFixed(0);
+  document.getElementById("usd").value = usdamt;
+  switcher = 0;
+  inputLength();
+  fadeusd();
+  document.title = usdamt+" USD";
+} 
+  
+function inputLength(){
+	  var btcval = document.getElementById("btc").value;
+	  var btcvallen = btcval.length;
+	  if(btcvallen === 10){
+		document.getElementsByClassName("btcin")[0].style.width = "350px";
+	  } else if(btcvallen === 9){
+		document.getElementsByClassName("btcin")[0].style.width = "315px";
+	  } else if(btcvallen === 8){
+		document.getElementsByClassName("btcin")[0].style.width = "285px";
+	  } else if(btcvallen === 7){
+		document.getElementsByClassName("btcin")[0].style.width = "255px";
+	  } else if(btcvallen === 6){
+		document.getElementsByClassName("btcin")[0].style.width = "225px";
+	  } else if(btcvallen === 5){
+		document.getElementsByClassName("btcin")[0].style.width = "195px";
+	  } else if(btcvallen === 4){
+		document.getElementsByClassName("btcin")[0].style.width = "165px";
+	  } else if(btcvallen === 3){
+		document.getElementsByClassName("btcin")[0].style.width = "135px";
+	  } else if(btcvallen === 2){
+		document.getElementsByClassName("btcin")[0].style.width = "105px";
+	  } else if(btcvallen === 1){
+		document.getElementsByClassName("btcin")[0].style.width = "75px";
+	  }
+	  
+	  var usdval = document.getElementById("usd").value;
+	  var usdvallen = usdval.length;
+	  if(usdvallen === 10){
+		document.getElementsByClassName("usdin")[0].style.width = "350px";
+	  } else if(usdvallen === 9){
+		document.getElementsByClassName("usdin")[0].style.width = "315px";
+	  } else if(usdvallen === 8){
+		document.getElementsByClassName("usdin")[0].style.width = "285px";
+	  } else if(usdvallen === 7){
+		document.getElementsByClassName("usdin")[0].style.width = "255px";
+	  } else if(usdvallen === 6){
+		document.getElementsByClassName("usdin")[0].style.width = "225px";
+	  } else if(usdvallen === 5){
+		document.getElementsByClassName("usdin")[0].style.width = "195px";
+	  } else if(usdvallen === 4){
+		document.getElementsByClassName("usdin")[0].style.width = "165px";
+	  } else if(usdvallen === 3){
+		document.getElementsByClassName("usdin")[0].style.width = "135px";
+	  } else if(usdvallen === 2){
+		document.getElementsByClassName("usdin")[0].style.width = "105px";
+	  } else if(usdvallen === 1){
+		document.getElementsByClassName("usdin")[0].style.width = "75px";
+	  }
+}
+
+hex=255;
+
+function fadeusd(){ 
+if(hex>0) { //If color is not black yet
+hex-=11; // increase color darkness
+document.getElementById("usd").style.color="rgb("+hex+","+hex+","+hex+")";
+setTimeout("fadeusd()",20); 
+}
+else
+hex=255 //reset hex value
+}
+
+function fadebtc(){ 
+if(hex>0) { //If color is not black yet
+hex-=11; // increase color darkness
+document.getElementById("btc").style.color="rgb("+hex+","+hex+","+hex+")";
+setTimeout("fadebtc()",20); 
+}
+else
+hex=255 //reset hex value
+}
+
+
+var ws = new WebSocket("wss://api-pub.bitfinex.com/ws/2");
+ws.onopen = function(){
+  ws.send(JSON.stringify({"event":"subscribe", "channel":"ticker", "pair":"BTCUSD"}))
+};
+ws.onmessage = function(msg){
+  var response = JSON.parse(msg.data);
+  var hb = response[1];
+  if(hb !== "hb"){
+	storelast = response[1][0];
+  var usdlen = document.getElementById("usd").value.length;
+  if(usdlen < 1){
+  	document.getElementById("usd").value = storelast;
+  }
+  if(switcher > 0){
+  	switchSrc();
+  } else {
+  	btcSrc();
+  }
+  
+  }
+};
+</script>
+</body>
+</html>
