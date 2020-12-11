@@ -47,7 +47,7 @@ html, body{
 </center></div>
 <div style="height: 200px;"></div>
 <div id="main">
-<input type="text" id="btc" class="btcin" value="1" onchange="return btcSrc();"> BTC = <input type="text" id="usd" class="usdin" onchange="return switchSrc();"> USD
+<input type="text" id="btc" class="btcin" value="1" onchange="return btcSrc();" onkeyup="return inputLength();"> BTC = <input type="text" id="usd" class="usdin" onchange="return switchSrc();" onkeyup="return inputLength();"> USD
 </div>
 <script>
 storelast = "";
