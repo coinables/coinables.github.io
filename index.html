@@ -3,24 +3,14 @@
 <head>
 <style>
 html,body{
-	padding: 20px;
+	padding-left: 10px;
 }
 </style>
-
-<script type="text/javascript" src="bitcoin.js"></script>
-<script type="text/javascript" src="buidl.js"></script>
-<script src="jquery.js"></script>
-<link rel="stylesheet" href="bootstrap.min.css">
 </head>
 <body>
-
-<h2>Here are some open source bitcoin web apps I have built:</h2>
-<br>
+<h1>COINABLES.GITHUB.IO</h1>
+<h2>This site is a collection of some open source client-side bitcoin web apps I have built.</h2>
 <p>Feel free to fork any of these projects.</p>
-
-<br>
-<div class="panel panel-default">
-<div class="panel-body">
 <ul>
 	<li><a href="https://segwitaddress.org">SegwitAddress.org</a> - Segwit paper wallet app.</li>
 	<li><a href="https://coinables.github.io/explorer">Explorer</a> - Simple bitcoin block explorer.</li>
@@ -31,25 +21,30 @@ html,body{
 	<li><a href="https://coinables.github.io/multisig">MultiSig Paper Wallet</a> - Multisig tool with Transaction Builder and Offline Key Signer.</li>
 	<li><a href="https://coinables.github.io/dragdrop">Drag-Drop</a> - Create private keys by drag and dropping a file or image.</li>
 	<li><a href="https://coinables.github.io/coldsigner">Cold Signer</a> - Tool to build and sign transactions offline.</li>
+	<li><a href="https://coinables.github.io/breev">Breev</a> - A simple clone of the infamous price watching site, preev.com</li>
 </ul>
 <b>JSWallet and UTXOBucket currently both share the same storage space and cannot be used together without deleting your local browser storage when changing between apps.</b>
-<br><br>
-</div>
-</div>
+<br>    
+<h3>Warning!</h3>
+ 
+<p>Although this site does not save, store, or log any private keys, it is very important not to re-use a private key of an address entered on any website including this site. Whenever entering a private key into any online form you should assume that address is no longer safe. </p>
 
-<div class="alert alert-dismissible alert-danger" id="feeWarn">
-  <a href="#" onclick="document.getElementById('feeWarn').style.display='none';return false;" class="close" data-dismiss="alert">X</a>
-  <strong>Use At Your Own Risk:</strong><br> Every app on this page is for educational purposes only. There are no guarantees. 
-</div>
-    <br>
-    <div class="alert alert-dismissible alert-warning" id="pkeyWarn">
-        <a href="#" onclick="document.getElementById('pkeyWarn').style.display='none';return false;" class="close" data-dismiss="alert">X</a>
-  <h4>Warning!</h4>
-  <p>Although this site does not save, store, or 
-log any private keys, it is very important not to re-use a private key of an address entered on any website including this site. 
-Whenever entering a private key into any online form you should assume that address is no longer safe. </p>
-</div>
+<p><strong>Use At Your Own Risk:</strong><br> Every app on this page is for educational purposes only. There are no guarantees. </p>
+
+<div style="position: fixed; top: 10px; right: 15px; z-index: 3;"><div id="qrdisplay" style="display: none;"><img src="donate.png"></div></div>
+<p>Donations: 3DrziWGfPSYWZpmGxL4WytNeXA2mwzEwWJ &nbsp;&nbsp;<span onclick="return showqr();" title="click to reveal QR Code"><b style="font-size: 26px;" >&#9860;</b>[qrcode]</span></p>
+<script>
+var toggle = 0;
+function showqr(){
+	if(toggle===0){
+		document.getElementById("qrdisplay").style.display = "block";
+		toggle = 1;
+	} else {
+		document.getElementById("qrdisplay").style.display = "none";
+		toggle = 0;
+	}
 	
-	
+}
+</script>
 </body>
 </html>
