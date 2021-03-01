@@ -199,6 +199,7 @@
 	
     <br>
 	<button id="entropyRef" onclick="return btnCreate();" class="btn btn-primary">Generate New Mnenomic</button>
+    <select id="wordLength"><option value="twty">24 Words</option><option value="twlv">12 Words</option></select>
 	<br>
 	<!-- mouse entropy canvas -->
 	<canvas id="entropyCanvas" width="800" height="200" style="border: 1px solid black;"></canvas>
@@ -259,20 +260,25 @@ function btnCreate(){
 			let mixedEntropy = entropy + csprngStr;
 			//create a mnemonic based on the 8192 random integers through sha256 hash
 			let shaEntropy = buidl.sha256(mixedEntropy, 1);
-			let make12words = shaEntropy.substring(32);
-			let newMnemonic = buidl.entropy2Mnemonic(make12words);
+            let lengthselector = document.getElementById("wordLength").value;
+            if(lengthselector!=="twty"){
+                shaEntropy = shaEntropy.substring(32);
+            }
+			
+			let newMnemonic = buidl.entropy2Mnemonic(shaEntropy);
 			
 			//dispaly mnemonic
 			document.getElementById("wordsout").style.display = "block";
 			document.getElementById("wordsout").innerHTML = "<center><b>Mnemonic Seed Phrase</b><br><br>"+newMnemonic.words+"</center>";
 			
 			makeseedhex = buidl.mnemonic2SeedHex(newMnemonic.words);
-			var thisxpub = buidl.seedToXpub(makeseedhex.seedHex, 0);
-			var thisxprv = buidl.seedToXprv(makeseedhex.seedHex, 0);
+			var thisxpub = buidl.seedToXpub(makeseedhex.seedHex, 49, 0);
+            var thisypub = buidl.convertXpub(thisxpub.xpub,"ypub");
+			var thisxprv = buidl.seedToXprv(makeseedhex.seedHex, 49, 0);
 			
 			//show deriv and xpub
 			document.getElementById("derivpath").style.display = "block";
-			document.getElementById("derivpath").innerHTML = '<table width="100%"><tr><td>BIP: </td><td><input value="44" disabled readonly></td></tr><tr><td>Coin: </td><td><input value="0" disabled readonly></td></tr><tr><td>Account: </td><td><input value="0" disabled readonly></td></tr><tr><td>Change: </td><td><input value="0" disabled readonly></td></tr></table><br><br><table width="100%"><tr><td align="left"><div id="qrxpub"></div><br>XPUB: <input type="text" style="font-size: 10px" value="'+thisxpub.xpub+'" width="99%" disabled readonly></td></tr><tr><td align="right"><div id="qrxprv"></div><br>XPRV: <input type="text"  style="font-size: 10px" value="'+thisxprv.xprv+'" width="99%" disabled readonly></td></tr></table><p>Create a watch-only wallet with Electrum by scanning the XPUB.<li>File-> New/Restore</li><li>Choose Standard Wallet</li><li>Use a Master Key</li><li>Scan you XPUB QR with webcam</li><li>Wallet is now watch only (view/receive only, cannot spend)</li></p>';
+			document.getElementById("derivpath").innerHTML = '<table width="100%"><tr><td>BIP: </td><td><input value="49" disabled readonly></td></tr><tr><td>Coin: </td><td><input value="0" disabled readonly></td></tr><tr><td>Account: </td><td><input value="0" disabled readonly></td></tr><tr><td>Change: </td><td><input value="0" disabled readonly></td></tr></table><br><br><table width="100%"><tr><td align="left"><div id="qrxpub"></div><br>XPUB: <input type="text" style="font-size: 10px" value="'+thisypub+'" width="99%" disabled readonly></td></tr><tr><td align="right"><div id="qrxprv"></div><br>XPRV: <input type="text"  style="font-size: 10px" value="'+thisxprv.xprv+'" width="99%" disabled readonly></td></tr></table><p>Create a watch-only wallet with Electrum by scanning the XPUB.<li>File-> New/Restore</li><li>Choose Standard Wallet</li><li>Use a Master Key</li><li>Scan you XPUB QR with webcam</li><li>Wallet is now watch only (view/receive only, cannot spend)</li></p>';
 			
 			document.getElementById("qrxpub").innerHTML = "";
 			document.getElementById("qrxprv").innerHTML = "";
@@ -285,7 +291,7 @@ function btnCreate(){
 			xprvarray = [];
 			
 			for(i=0;i<50;i++){
-				nextaddr = buidl.fromXpub(thisxpub.xpub,0,i);
+				nextaddr = buidl.fromXpub(thisxpub.xpub,0,i,3);
 				addrarray.push(nextaddr.addr);
 				
 				nextkey = buidl.xprvToWIF(thisxprv.xprv,0,i);
@@ -315,7 +321,7 @@ function showAdv(){
 	var top = document.getElementById("addrs").offsetTop;
     	
 	for(ii=0;ii<50;ii++){
-		document.getElementById("keylist").innerHTML += 'm/44&#39;/0&#39;/0&#39;/0&#39;/'+ii+' <input type="text" value="'+addrarray[ii]+'" class="addrout" onmouseover="return showQR(this);" onmouseleave="return hideQR();" readonly> <input type="text" value="'+xprvarray[ii]+'" class="pkout" disabled readonly><br>';
+		document.getElementById("keylist").innerHTML += 'm/49&#39;/0&#39;/0&#39;/0&#39;/'+ii+' <input type="text" value="'+addrarray[ii]+'" class="addrout" onmouseover="return showQR(this);" onmouseleave="return hideQR();" readonly> <input type="text" value="'+xprvarray[ii]+'" class="pkout" disabled readonly><br>';
 	}
 	
 	window.scrollTo(0, top);  
