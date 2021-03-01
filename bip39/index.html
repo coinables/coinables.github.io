@@ -321,7 +321,7 @@ function showAdv(){
 	var top = document.getElementById("addrs").offsetTop;
     	
 	for(ii=0;ii<50;ii++){
-		document.getElementById("keylist").innerHTML += 'm/49&#39;/0&#39;/0&#39;/0&#39;/'+ii+' <input type="text" value="'+addrarray[ii]+'" class="addrout" onmouseover="return showQR(this);" onmouseleave="return hideQR();" readonly> <input type="text" value="'+xprvarray[ii]+'" class="pkout" disabled readonly><br>';
+		document.getElementById("keylist").innerHTML += 'm/49&#39;/0&#39;/0&#39;/0&#39;/'+ii+' <input type="text" value="'+addrarray[ii]+'" class="addrout" onmouseover="return showQR(this);" onmouseleave="return hideQR();" readonly> <input type="text" value="'+xprvarray[ii]+'" class="pkout" disabled onmouseover="return showQR(this);" onmouseleave="return hideQR();" readonly><br>';
 	}
 	
 	window.scrollTo(0, top);  
