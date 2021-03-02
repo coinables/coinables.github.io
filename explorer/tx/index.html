@@ -32,9 +32,15 @@ div{
 	margin: 0px;
 	border: 1px solid #000;
 }
-
+#qrfloat{
+		display: none;
+		position: fixed;
+		right: 10px;
+		top: 10px;
+}
 </style>
 <script src="../jquery-3.3.1.min.js"></script>
+<script src="../qrcode.js"></script>    
 </head>
 <body>
 <h1>Tiny Explorer</h1>
@@ -55,6 +61,7 @@ Confirmations:  <input type="text" id="confirmations"><br><br>
 <div class="inum"><b>#</b></div><div class="iacct"><b>Recipient</b></div><div class="ivalue"><b>Value (BTC)</b></div><div class="ivalue"><b>Value (USD)</b></div><br>
 </div>
 <input type="hidden" id="priceholder">
+<div id="qrfloat"></div>
 <script>
 function queryAddr(){
 	var addrInput = $("#addrQuery").val();
@@ -114,14 +121,14 @@ window.onload = function(){
 					sumInputs += inValFloat;
 					var usdAmt = getUSDFloat * inValFloat; 
 					sumInputsUSD += usdAmt;
-					$("#senderContainer").append('<div class="inum">'+i+'</div><div class="iacct"><a href="../addr/?q='+api.inputs[i].address+'">'+api.inputs[i].address+'</a></div><div class="ivalue">'+api.inputs[i].value+'</div><div class="ivalue">$'+usdAmt.toFixed(2)+'</div><br>');
+					$("#senderContainer").append('<div class="inum">'+i+'</div><div class="iacct"><a href="../addr/?q='+api.inputs[i].address+'" onmouseover="return showQR(this);" onmouseleave="return hideQR();">'+api.inputs[i].address+'</a></div><div class="ivalue">'+api.inputs[i].value+'</div><div class="ivalue">$'+usdAmt.toFixed(2)+'</div><br>');
 				}
 				
 				for(var i=0;i<countOutputs;i++){
 					var usdOutAmt = parseFloat($("#priceholder").val()) * parseFloat(api.outputs[i].value);
 					sumOutputs += parseFloat(api.outputs[i].value);
 					sumOutputsUSD += usdOutAmt;
-					$("#recContainer").append('<div class="inum">'+i+'</div><div class="iacct"><a href="../addr/?q='+api.outputs[i].address+'">'+api.outputs[i].address+'</a></div><div class="ivalue">'+api.outputs[i].value+'</div><div class="ivalue">$'+usdOutAmt.toFixed(2)+'</div><br>');
+					$("#recContainer").append('<div class="inum">'+i+'</div><div class="iacct"><a href="../addr/?q='+api.outputs[i].address+'" onmouseover="return showQR(this);" onmouseleave="return hideQR();">'+api.outputs[i].address+'</a></div><div class="ivalue">'+api.outputs[i].value+'</div><div class="ivalue">$'+usdOutAmt.toFixed(2)+'</div><br>');
 				}
 				var minerfee = sumInputs - sumOutputs;
 				var minerfeeUSD = sumInputsUSD - sumOutputsUSD;
@@ -144,6 +151,18 @@ function timeConverter(UNIX_timestamp){
   var sec = a.getSeconds();
   var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
   return time;
+}
+
+function showQR(elemQR){
+	let elementValue = elemQR.innerHTML;
+	document.getElementById("qrfloat").style.display = "block";
+	document.getElementById("qrfloat").innerHTML = "";
+	new QRCode(document.getElementById("qrfloat"),elementValue);
+	
+}
+
+function hideQR(){
+	document.getElementById("qrfloat").style.display = "none";
 }
 </script>
 </body>
