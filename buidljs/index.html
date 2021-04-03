@@ -77,14 +77,6 @@ account: <input type="number" id="seedToXpubp3" value="0"><br>
 <br>
 <textarea id="seedToXpubout" cols="130" rows="5"></textarea>
 <br><br>
-<h3>convertXpub(xpub, target)</h3>
-<p>Takes a xpub/ypub/zpub input and outputs to target type</p>
-xpub/ypub/zpub: <input type="text" id="convertXpubp1" size="100"><br>
-target: <select id="convertXpubp2"><option value="xpub">xpub</option><option value="ypub">ypub</option><option value="zpub">zpub</option></select><br>
-<button id="convertXpub" onclick="return convertXpubbtn();">convertXpub</button>
-<br>
-<textarea id="convertXpubout" cols="130" rows="5"></textarea>    
-<br><br>
 <h3>seedToXprv(seed, derivationPath, account)</h3>
 <p>3 parameters (string, ,integer, integer). First parameter is a hex seed. Second is derivation path (either 44, 49, 84). Third parameter is HD account.</p>
 seed: <input type="text" id="seedToXprvp1" size="100"><br>
@@ -105,12 +97,11 @@ index: <input type="text" id="fromHDSeedp5" value="0"><br>
 <br>
 <textarea id="fromHDSeedout" cols="130" rows="5"></textarea>
 <br><br>
-<h3>fromXpub(xpub, change, index, type)</h3>
-<p>4 parameters (string, integer, integer, integer/string). First parameter is xpub (do not use ypub or zpub, that is for external use only. Your deriv path is already encoded in your xpub, use the last parameter in this function to select address type). Second is change address account. Third parameter is key index. Fourth is address type, 1 = legacy, 3 = p2sh-segwit, "b" = bech32 segwit</p>
+<h3>fromXpub(xpub, change, index)</h3>
+<p>3 parameters (string, integer, integer, integer/string). First parameter is xpub/ypub/zpub. Second is change address account. Third parameter is key index.</p>
 xpub: <input type="text" id="fromXpubp1" size="100"><br>
 change: <input type="number" id="fromXpubp2" value="0"><br>
 index: <input type="number" id="fromXpubp3" value="0"><br>
-type: <select id="fromXpubp4"><option value="1">Legacy starts with 1</option><option value="3">P2SH Segwit starts with 3</option><option value="b">Bech32 starts with bc1</option></select><br>
 <button id="fromXpub" onclick="return fromXpubbtn();">fromXpub</button>
 <br>
 <textarea id="fromXpubout" cols="130" rows="5"></textarea>
@@ -143,33 +134,15 @@ function bulk(){
 	let p1 = document.getElementById("bulkp1").value;
 	let p2 = document.getElementById("bulkp2").value;
 	let p3 = document.getElementById("bulkp3").value;
-	let chk = p1.substring(0,1);
-	if(chk==="x"){
+	
+	
 		var bulkout = '';
 		for(var i=0;i<p3;i++){
-			var loopaddr = buidl.fromXpub(p1,p2,i,1);
+			var loopaddr = buidl.fromXpub(p1,p2,i);
 			bulkout += loopaddr.addr+"\r\n";
 		}
 		document.getElementById("bulkout").value = bulkout;
-	}else if(chk==="y"){
-		var bulkout = '';
-		var convert = buidl.convertXpub(p1,"xpub");
-		for(var i=0;i<p3;i++){
-			var loopaddr = buidl.fromXpub(convert,p2,i,3);
-			bulkout += loopaddr.addr+"\r\n";
-		}
-		document.getElementById("bulkout").value = bulkout;
-	}else if(chk==="z"){
-		var bulkout = '';
-		var convert = buidl.convertXpub(p1,"xpub");
-		for(var i=0;i<p3;i++){
-			var loopaddr = buidl.fromXpub(convert,p2,i,"b");
-			bulkout += loopaddr.addr+"\r\n";
-		}
-		document.getElementById("bulkout").value = bulkout;
-	}else {
-		console.log("xpub conversion error");
-	}
+	
 }
 function createP2PKHbtn(){
 	let p1 = document.getElementById("createP2PKHp1").value;
@@ -237,11 +210,8 @@ function fromXpubbtn(){
 	let p1 = document.getElementById("fromXpubp1").value;
 	let p2 = document.getElementById("fromXpubp2").value;
 	let p3 = document.getElementById("fromXpubp3").value;
-	let p4 = document.getElementById("fromXpubp4").value;
-	if(p4!=="b"){
-		p4 = parseInt(p4);
-	}
-	let address = buidl.fromXpub(p1,p2,p3,p4);
+	
+	let address = buidl.fromXpub(p1,p2,p3);
 	document.getElementById("fromXpubout").value = JSON.stringify(address);
 }
 function xprvToWIFbtn(){
