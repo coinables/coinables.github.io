@@ -6,14 +6,14 @@
     
 <h2>All you need to create a bitcoin transaction is (3) things:</h2> 
 <ul>
-<li>the transaction ID, </li>
-<li>output position (vout) and; </li>
-<li>value.</li>
+<li>the transaction ID of the unspent output you want to spend, </li>
+<li>its output position (a.k.a. vout) and; </li>
+<li>the unspet outputs original value in satoshis.</li>
 </ul>
 <img src="all-you-need.png" width="500px">
 <br><br>
 <h2>After building the transaction it is not valid unless signed with the assoicated address' WIF private key. After signing, the transaction can be broadcast to the network. 
-<h3>Step one obtain UTXOs from address you which to spend.</h3>
+<h3>Step one obtain UTXOs from address you wish to spend.</h3>
 <li>Auto Fetch tools (internet required): <a href="online-get-utxos.html">Source A</a> | <a href="online-get-utxos-altsource.html">Source B</a></li>
 <li>Manually obtain and enter transaction ids, v_out(aka n_out), and input values. Use the JSON template below.</li>
 <br>
