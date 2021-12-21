@@ -69,17 +69,15 @@ body, html {
 </head>
     
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary" style="max-width: 98%;">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">FastWallet</a>
     
 
-    <div class="collapse navbar-collapse" id="navbarColor01">
-      <ul class="navbar-nav me-auto">
+    <div class="navbar w-100 order-1 order-md-0" id="navbarColor01">
+      <ul class="navbar-nav mr-auto">
         <li class="nav-item">
-          <a class="nav-link active" href="#" id="receivelink" onclick="return showReceive();">Receive
-            <span class="visually-hidden">(current)</span>
-          </a>
+          <a class="nav-link active" href="#" id="receivelink" onclick="return showReceive();">Receive</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#" id="sendlink" onclick="return showSend();">Send</a>
