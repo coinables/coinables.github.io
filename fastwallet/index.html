@@ -148,7 +148,8 @@ body, html {
   <div class="card border-primary mb-3" style="max-width: 100rem;"><div class="card-body">
   <p><b>Be aware this is a serverless web wallet with your private keys stored in the browser! YIKES! You probably shouldn't use this wallet for significant sums.<br>
   This wallet uses public APIs like Blockchain and Blockchair for UTXO data and they probably track your IP! Use VPN/TOR etc.<br>
-  Your keys are ONLY stored on YOUR device's temporary internet files. If you don't save your back-up mnemonic and you clear your browser cache you will lose access to your funds permanently.</b></div></div> 
+  Your keys are ONLY stored on YOUR device's temporary internet files. If you don't save your back-up mnemonic and you clear your browser cache you will lose access to your funds permanently.
+  <br>FastWallet is just code that runs on your machine, it doesn't know anything about your keys, recovery or addresses, etc.</b></div></div> 
   FastWallet is a serverless bitcoin web wallet I built for casual/throwaway use cases. The wallet is limited to only 21 addresses, when you use up all 21 addresses just start a new wallet, although you are not prevented from re-using addresses if you wish(not recommended). The 21 address limit is to prevent a bloated wallet with too many addresses that will exceed free API usage limits, and to avoid any look-ahead gap issues if you attempt to recover on another device that support BIP84 deterministic wallets.<br><br>
  
 <b>USE AT YOUR OWN RISK.</b>  </p>
