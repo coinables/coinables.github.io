@@ -477,7 +477,7 @@ function showWords(){
 
 function importWallet(){
 	console.log("import wallet");
-	$("#mnemonicOut").html('<input type="text" class="form-control" id="mnemonicInput" placeholder="ENTER YOUR 12 WORD MNEMONIC BACK UP SEPARATED BY A SPACE"><button class="btn btn-outline-secondary" onclick="return doImport();">Import</button>');
+	$("#mnemonicOut").html('<br><input type="text" class="form-control" id="mnemonicInput" placeholder="ENTER YOUR 12 WORD MNEMONIC BACK UP SEPARATED BY A SPACE"><button class="btn btn-outline-secondary" onclick="return doImport();">Import</button><br><br>Alternatively, you can erase your current wallet and create a new one.<br><button class="btn btn-outline-danger" onclick="return doDelete();">Erase Wallet</button>');
 }
 
 function doImport(){
@@ -486,6 +486,14 @@ function doImport(){
 	window.localStorage.setItem("fastWallet", recoveryIn); 
     fw = recoveryIn;
 	$("#mnemonicOut").html("Mnemonic phrase imported. Refreshing...");
+	$("#mnemonicOut").fadeOut(2000,function(){
+		location.reload();
+	});
+}
+
+function doDelete(){
+	window.localStorage.removeItem("fastWallet");
+	$("#mnemonicOut").html("Wallet deleted. Refreshing...");
 	$("#mnemonicOut").fadeOut(2000,function(){
 		location.reload();
 	});
