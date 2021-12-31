@@ -94,6 +94,7 @@ html,body{
 	
 	window.onload = function(){
 		addrstring = "";
+		labelstring = "";
 		var keystoragelen = allStorage().length;
 		
 		for(var i=0;i<keystoragelen;i++){
@@ -102,34 +103,39 @@ html,body{
 			var loopp2pkh = parsepair.p2pkh;
 			var loopbech32 = parsepair.bech32;
 			var loopp2sh = parsepair.p2sh;
-			addrstring += loopp2pkh+","+loopbech32+","+loopp2sh+",";
+			addrstring += loopp2pkh+"|"+loopbech32+"|"+loopp2sh+",";
+			labelstring += parsepair.label+"|"+parsepair.label+"|"+parsepair.label+"|";
 		}
 		
 		addrstring2 = addrstring.substring(0, addrstring.length - 1);
+		labelstring = labelstring.substring(0, labelstring.length - 1);
 		
 		$.ajax({
 			async: true,
 			type: "GET",
-			url: "https://api.blockchair.com/bitcoin/dashboards/addresses/"+addrstring2,
+			url: "https://blockchain.info/multiaddr?active="+addrstring2,
 			success: function(result) {
 			 			 
-			 dataout = result.data.set.balance;
+			 dataout = result.wallet.final_balance;
 			 var fullbtcs = dataout/100000000;
 			 fullbtcs.toFixed(8);
 			 
 			 $("#walletbal").val(fullbtcs);
 			 
-			 var historyreturn = result.data.addresses;
+			 var historyreturn = result.addresses;
 			 var balanceslength = Object.keys(historyreturn).length;
 			 
 			 console.log(historyreturn);
+			 console.log(labelstring);
 			 
-			 var outhtml = '<table><tr><td class="outputheader wideinput">Address</td><td class="outputheader">Satoshis</td><td class="outputheader">Received</td><td class="outputheader">Last Received</td><td class="outputheader">Last Spent</td><td class="outputheader">Label</td></tr>';
+			 var outhtml = '<table><tr><td class="outputheader wideinput">Address</td><td class="outputheader">Balance</td><td class="outputheader">Received</td><td class="outputheader">Sent</td><td class="outputheader"># of TXs</td><td class="outputheader">Label</td></tr>';
+			 
+			 var splitlabels = labelstring.split("|");
 			 
 			 for(var i=0;i<balanceslength;i++){
 			 
 				var keystoragelen = allStorage().length;
-				var keylabel = "";
+				var keylabel = splitlabels[i];
 		
 				for(var ii=0;ii<keystoragelen;ii++){
 					var parsepair = JSON.parse(allStorage()[ii]);
@@ -139,12 +145,10 @@ html,body{
 					var loopp2sh = parsepair.p2sh;
 					var addrarr = [];
 					addrarr.push(loopp2pkh,loopbech32,loopp2sh);
-					if(addrarr.includes(Object.keys(historyreturn)[i])){
-						keylabel = parsepair.label;
-					}
+					
 				}
 			 				
-				outhtml += '<tr><td><input type="text" class="wideinput" value="'+Object.keys(historyreturn)[i]+'" id="'+i+'"></td><td><input type="number" value="'+historyreturn[Object.keys(historyreturn)[i]].balance+'" readonly></td><td><input type="number" value="'+historyreturn[Object.keys(historyreturn)[i]].received+'" readonly></td><td><input type="text" value="'+historyreturn[Object.keys(historyreturn)[i]].last_seen_receiving+'" readonly></td><td><input type="text" value="'+historyreturn[Object.keys(historyreturn)[i]].last_seen_spending+'" readonly></td><td><input type="text" value="'+keylabel+'" readonly></td></tr>';
+				outhtml += '<tr><td><input type="text" class="wideinput" value="'+historyreturn[Object.keys(historyreturn)[i]].address+'" id="'+i+'"></td><td><input type="number" value="'+historyreturn[Object.keys(historyreturn)[i]].final_balance+'" readonly></td><td><input type="number" value="'+historyreturn[Object.keys(historyreturn)[i]].total_received+'" readonly></td><td><input type="text" value="'+historyreturn[Object.keys(historyreturn)[i]].total_sent+'" readonly></td><td><input type="text" value="'+historyreturn[Object.keys(historyreturn)[i]].n_tx+'" readonly></td><td><input type="text" value="'+keylabel+'" readonly></td></tr>';
 			 }
 			 
 			 outhtml += '</table>';
@@ -620,8 +624,6 @@ ws.onmessage = function(msg){
 };
 </script>
 	<p>Other Related Tools:</p>
-	<a href="https://coinables.github.io/utxobucket">UTXOBucket</a><br>
-	<a href="https://coinables.github.io/multisig">MultiSig Paper Wallet with Transaction Builder and Offline Key Signor</a><br>
-	<a href="https://coinables.github.io/dragdrop">Drag-Drop - create private keys from a file or image.</a><br>
+	<a href="https://coinables.github.io">coinables.github.io</a><br>
 </body>
 </html>
