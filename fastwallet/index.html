@@ -4,9 +4,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
-<title>FastWallet - Serverless No Sign-up bitcoin web wallet</title>
-<meta name="description" content="An instant HD bitcoin web wallet that runs in your browser. Instantaneous use! No sign up, no wallet setup process or upfront back up.">
-    <meta name="keywords" content="Bitcoin, throwaway wallet, free wallet, segwit, pay to witness, hierarchical deterministic wallet, HD wallet, instant, no sign up, no wallet setup.">
+<title>FastWallet - Nomadic No Sign-up bitcoin web wallet</title>
+<meta name="description" content="An instant HD bitcoin web wallet that runs in your browser. Serverless, nomadic, privacy-focused throwaway bitcoin wallet. Instantaneous use! No sign up, no wallet setup process or required back up.">
+    <meta name="keywords" content="Bitcoin, throwaway wallet, nomadic wallet, privacy-focused, free wallet, segwit, pay to witness, hierarchical deterministic wallet, HD wallet, web wallet, temporary wallet, instant, no sign up, no wallet setup.">
 
 <style>
 body, html {
@@ -132,7 +132,8 @@ body, html {
 	<table align="center"><tr><td width="75%"><input type="text" class="form-control" id="outputaddr" placeholder="SEND TO ADDRESS" required></td><td width="25%"><input type="text" id="outamtinput" class="form-control" onchange="return minerCalc();" placeholder="AMOUNT"></td></tr></table></div>
 	<div class="form-group" style="width: 100%;">
 	<table align="center"><tr><td width="75%"><input type="text" class="form-control" id="changeout" placeholder="CHANGE ADDRESS"></td><td width="25%"><input type="text" class="form-control" id="changeamt" onchange="return minerCalc();"  placeholder="AMOUNT"></td></tr></table></div>
-	<table align="center"><tr><td width="75%">MINERS FEE</td><td width="25%"><input type="text" class="form-control" id="minerfee" value="1000" readonly></td></tr><tr><td></td><td><button type="button" class="btn btn-outline-secondary" onclick="return sendtx();">Send Transaction</button></td></tr></table><br>
+	<table align="center"><tr><td width="75%">SATS PER BYTE</td><td width="25%"><input type="text" class="form-control" id="spb" value="6" readonly></td></tr><tr><td width="75%">TOTAL MINERS FEE</td><td width="25%"><input type="text" class="form-control" id="minerfee" value="1000" readonly></td></tr><tr><td></td><td><button type="button" class="btn btn-outline-secondary" onclick="return sendtx();">Send Transaction</button></td></tr></table><br>
+	<input type="hidden" id="utxocount">
 	<div id="hexout"></div>
 	</div>
 	<input type="hidden" id="addrbal"><input type="hidden" id="addrsel">
@@ -239,9 +240,17 @@ $.ajax({
 				 //console.log(res.data);
 				 console.log(res.data[loopaddress].utxo.length + " utxos found");
 				 var addrbal = res.data[loopaddress].address.balance;
+				 $("#utxocount").val(res.data[loopaddress].utxo.length);
+				 //default fee 6 sats per byte
+				 var spb = $("#spb").val();
+				 var basebytes = 124;
+				 var inputbytes = res.data[loopaddress].utxo.length * 68;
+				 var calctotalbytes = (inputbytes + basebytes);
+				 var calctotalfee = calctotalbytes * spb;
+				 $("#minerfee").val(calctotalfee);
 				 $("#addrbal").val(addrbal);
 				 $("#addrsel").val(loopaddress);
-				 $("#outamtinput").val(addrbal-1000);
+				 $("#outamtinput").val(addrbal-calctotalfee);
 				 data = res.data[loopaddress].utxo.map(function(item){
 					return {
 					  "txid": item.transaction_hash,
@@ -305,6 +314,15 @@ function minerCalc(){
 	const ca = $("#changeamt").val();
 	let mf = wb - oa - ca;
 	$("#minerfee").val(mf);
+	
+	
+	 var basebytes = 124;
+	 var inputbytes = $("#utxocount").val() * 68;
+	 var calctotalbytes = (inputbytes + basebytes);
+	 var solveforrate = mf / calctotalbytes;
+	 var roundsolvefor = solveforrate.toFixed(0);
+	 $("#spb").val(roundsolvefor);
+	
 	if(mf > 9999){
 		alert("Your miner fee is very high. Be sure to use a change address if you aren't spending the full amount.");
 	}
