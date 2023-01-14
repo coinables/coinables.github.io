@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ORION TX VISUALIZER</title>
+<script src="../src/sigma.core.js"></script>
+<script src="../src/conrad.js"></script>
+<script src="../src/utils/sigma.utils.js"></script>
+<script src="../src/utils/sigma.polyfills.js"></script>
+<script src="../src/sigma.settings.js"></script>
+<script src="../src/classes/sigma.classes.dispatcher.js"></script>
+<script src="../src/classes/sigma.classes.configurable.js"></script>
+<script src="../src/classes/sigma.classes.graph.js"></script>
+<script src="../src/classes/sigma.classes.camera.js"></script>
+<script src="../src/classes/sigma.classes.quad.js"></script>
+<script src="../src/classes/sigma.classes.edgequad.js"></script>
+<script src="../src/captors/sigma.captors.mouse.js"></script>
+<script src="../src/captors/sigma.captors.touch.js"></script>
+<script src="../src/renderers/sigma.renderers.canvas.js"></script>
+<script src="../src/renderers/sigma.renderers.webgl.js"></script>
+<script src="../src/renderers/sigma.renderers.svg.js"></script>
+<script src="../src/renderers/sigma.renderers.def.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.nodes.def.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.nodes.fast.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.edges.def.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.edges.fast.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.edges.arrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.labels.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.hovers.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.nodes.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.curve.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.arrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.curve.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.arrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.extremities.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.utils.js"></script>
+<script src="../src/renderers/svg/sigma.svg.nodes.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.edges.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.edges.curve.js"></script>
+<script src="../src/renderers/svg/sigma.svg.labels.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.hovers.def.js"></script>
+<script src="../src/middlewares/sigma.middlewares.rescale.js"></script>
+<script src="../src/middlewares/sigma.middlewares.copy.js"></script>
+<script src="../src/misc/sigma.misc.animation.js"></script>
+<script src="../src/misc/sigma.misc.bindEvents.js"></script>
+<script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
+<script src="../src/misc/sigma.misc.drawHovers.js"></script>
+<script src="../plugins/sigma.plugins.neighborhoods/sigma.plugins.neighborhoods.js"></script>
+<script src="../plugins/sigma.layout.forceAtlas2/supervisor.js"></script>
+<script src="../plugins/sigma.layout.forceAtlas2/worker.js"></script>
+<script src="lib/jquery-2.1.1.min.js"></script>
+<style>
+    html,body{
+        font-family: "Calibri", "Arial", "sans-serif";
+		background-color: #2e1f2e;
+		margin: 0px;
+		padding: 0px;
+    }
+    #graph-container {
+      top: -20px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 600px;
+      position: relative;
+      background-color: #2d1e2d;
+    }
+    .sigma-edge {
+      stroke: #57b6f2;
+    }
+    .sigma-node {
+      fill: #990188;
+      stroke: #14191C;
+      stroke-width: 2px;
+    }
+	.sigma-label{
+		fill: #f3f3f3;
+	}
+    .sigma-node:hover {
+      fill: blue;
+    }
+    .muted {
+      fill-opacity: 0.1;
+      stroke-opacity: 0.1;
+	  stroke: #ccc;
+    }
+    .channels{
+        padding: 5px;
+        background-color: darkslateblue;
+        color: aliceblue;
+        border-radius: 8px;
+        border: 1px solid #000039;
+        margin: 3px;
+    }
+    .nodeAlias{
+        padding: 5px;
+        background-color: white;
+        color: #111111;
+        border-radius: 8px;
+        border: 1px solid #fff;
+        margin: 3px;
+    }
+	.my-face{
+    width: 70px;
+    height: 70px;
+    background: #1a0933;
+    border-radius: 50% 50%50% 4%;
+    transform: rotate(-46deg);
+}
+.alien-wrapper{
+    display: inline-block;
+    margin-bottom: 11px;
+	position: relative;
+	margin: auto;
+	margin-bottom: 10px;
+}
+.eye{
+    width: 20px;
+    height: 20px;
+    background-color: #57b6f2;
+    position: absolute;
+    top: 28px;
+    left: 8px;
+    border-top-left-radius: 100%;
+    border-bottom-right-radius: 100%;
+    transform: rotate(85deg);
+}
+.eye-2 {
+    width: 20px;
+    height: 20px;
+    background-color: #57b6f2;
+    position: absolute;
+    top: 28px;
+    border-top-left-radius: 100%;
+    border-bottom-right-radius: 100%;
+    transform: rotate(0deg);
+    right:8px;
+}
+    h4{
+        margin: -5px;
+    }
+    #searchOutput{
+        width: 30%;
+        position: absolute;
+        right: 4px;
+        top:50px;
+        text-align: right;
+    }
+    #splash{
+		width: 100%;
+		height: 1000px;
+		background-color: #2e1f2e;
+		color: #f2f2f2;
+		font-size: 36px;
+		display: block;
+		position: fixed;
+		top: 0px;
+	}
+	#container{
+		display: none;
+	}
+	#txbar{
+		display: inline-block;
+		position: absolute; 
+		top: 0px;
+		border: 3px solid #0e1e0e;
+		border-radius: 13px;
+		padding: 7px;
+		left: 26%;
+	}
+  </style>
+</head>
+
+<body>
+<div id="splash"><center><br><br><br><br><br><br><br><div class="alien-wrapper position-relative">
+            <div class="my-face"></div>
+            <div class="eye"></div>
+            <div class="eye-2"></div>
+            
+        </div><br><em>ORION</em><br><span style="position:relative; top: -10px; font-size:16px;"><em>[TRANSACTION VISUALIZER]</em></span></center></div>
+<div id="container">  
+<div id="graph-container"></div>  
+</div>
+<input type="text" placeholder="EXPLORE RELATED" style="padding: 4px; font-size: 16px; width: 350px; margin-left: 15px; margin-bottom: 15px;" onkeyup="return nodeSearch();" id="search">
+<div id="searchOutput"></div>
+<div id="txbar"><input type="text" id="txQuery" placeholder="TRANSACTION ID" style="padding: 4px; font-size: 16px; width: 550px;"><button onclick="explore();" style="padding: 4px; font-size: 16px;">GO</button></div>
+<br><br>
+<script>
+function explore(){
+	var txInput = $("#txQuery").val();
+	
+	var url = "../public/orion.html?q="+txInput;
+	window.location.replace(url);
+}
+
+window.onload = function(){
+	
+	$("#splash").fadeOut(5000);
+    $("#container").fadeIn(8000);
+    
+	var searchParams = new URLSearchParams(window.location.search);
+
+	if(searchParams.has('q')){
+		var param = searchParams.get('q');
+	} else {
+		var param = "7549987d570b00adf44f1d467df144c5ed096af3e9d533743106e1d19833deda";
+	}
+
+	console.log("start");
+	var duplicateCheck = [];
+	var nodesJSON = { "nodes" : []};
+	var channelsJSON = { "channels" : []};
+		
+	
+	var parentTx = param;
+	var txsmelt = parentTx+"smelt";
+	nodesJSON.nodes.push({"nodeid":txsmelt,"alias":parentTx})
+
+	var urlGetTx = "https://mempool.space/api/tx/"+parentTx; 
+	var urlGetOutputSpends = "https://mempool.space/api/tx/"+parentTx+"/outspends";
+	
+	$.ajax({
+			async: false,
+			type: "GET",
+			url: urlGetTx,
+			success: function(result) {
+				console.log("first ajax success");
+				var txapi = result;
+					for(i=0;i<txapi.vin.length;i++){
+						if(duplicateCheck.includes(txapi.vin[i].prevout.scriptpubkey_address)){
+						
+						} else {
+							duplicateCheck.push(txapi.vin[i].prevout.scriptpubkey_address);
+							nodesJSON.nodes.push({"nodeid":txapi.vin[i].prevout.scriptpubkey_address,"alias":txapi.vin[i].prevout.scriptpubkey_address})
+						}
+						
+					}
+					for(ii=0;ii<txapi.vout.length;ii++){
+						if(duplicateCheck.includes(txapi.vout[ii].scriptpubkey_address)){
+						
+						} else {
+							duplicateCheck.push(txapi.vout[ii].scriptpubkey_address);
+							nodesJSON.nodes.push({"nodeid":txapi.vout[ii].scriptpubkey_address,"alias":txapi.vout[ii].scriptpubkey_address})
+						}
+							
+					}
+					for(iii=0;iii<txapi.vin.length;iii++){
+						if(duplicateCheck.includes(txapi.vin[iii].txid)){
+						
+						} else {
+							duplicateCheck.push(txapi.vin[iii].txid);
+							nodesJSON.nodes.push({"nodeid":txapi.vin[iii].txid,"alias":txapi.vin[iii].txid})
+							channelsJSON.channels.push({"source":txapi.vin[iii].txid, "destination":txapi.vin[iii].prevout.scriptpubkey_address, "short_channel_id":"pparent"+txapi.vin[iii].txid+iii})
+						}
+						channelsJSON.channels.push({"source":txapi.vin[iii].prevout.scriptpubkey_address, "destination":txsmelt, "short_channel_id":txapi.vin[iii].txid+iii})
+					}
+					for(iiii=0;iiii<txapi.vout.length;iiii++){
+						channelsJSON.channels.push({"source":txsmelt, "destination":txapi.vout[iiii].scriptpubkey_address, "short_channel_id":parentTx+iiii})
+					}
+					
+				//console.log(nodesJSON);
+				}
+			})	
+	
+	$.ajax({
+		async: false,
+		type: "GET",
+		url: urlGetOutputSpends,
+		success: function(result) {
+			//console.log(result)
+			console.log("second ajax success");
+			var txapiouts = result;
+					
+			for(i=0;i<txapiouts.length;i++){
+				
+				if(txapiouts[i].spent===false){
+					//do nothing
+				} else {
+					let spenttxid = txapiouts[i].txid;
+					
+					if(duplicateCheck.includes(spenttxid)){
+					
+					} else {
+						duplicateCheck.push(spenttxid)
+						nodesJSON.nodes.push({"nodeid":spenttxid,"alias":spenttxid})
+					}
+					
+										
+					$.ajax({
+					async: false,
+					type: "GET",
+					url: "https://mempool.space/api/tx/"+spenttxid,
+					success: function(result) {
+						console.log("third ajax success");
+						var txapispent = result;
+												
+						for(iii=0;iii<txapispent.vout.length;iii++){
+							if(duplicateCheck.includes(txapispent.vout[iii].scriptpubkey_address)){
+							
+							} else {
+								duplicateCheck.push(txapispent.vout[iii].scriptpubkey_address);
+								nodesJSON.nodes.push({"nodeid":txapispent.vout[iii].scriptpubkey_address,"alias":txapispent.vout[iii].scriptpubkey_address})
+							}
+							
+						}
+						
+						for(iiii=0;iiii<txapispent.vin.length;iiii++){
+							console.log(txapispent.vin[iiii].prevout.scriptpubkey_address);
+							if(duplicateCheck.includes(txapispent.vin[iiii].prevout.scriptpubkey_address)){
+							
+							} else {
+								duplicateCheck.push(txapispent.vin[iiii].prevout.scriptpubkey_address);
+								nodesJSON.nodes.push({"nodeid":txapispent.vin[iiii].prevout.scriptpubkey_address,"alias":txapispent.vin[iiii].prevout.scriptpubkey_address})
+							}
+							
+							channelsJSON.channels.push({"source":txapispent.vin[iiii].prevout.scriptpubkey_address, "destination":spenttxid, "short_channel_id":spenttxid+iiii})
+						}
+						
+						for(v=0;v<txapispent.vout.length;v++){
+							channelsJSON.channels.push({"source":spenttxid, "destination":txapispent.vout[v].scriptpubkey_address, "short_channel_id":spenttxid+v})
+						}
+						
+					}
+					});
+					
+				}
+				
+				
+								
+			}
+			
+		}
+	});	
+			
+	let nodesLength = nodesJSON.nodes.length;
+
+	h = {
+	  nodes: [],
+	  connections: []
+	}
+
+	for(var i=0;i<nodesLength;i++){
+		
+			h.nodes.push({
+				id: nodesJSON.nodes[i].nodeid,
+				label: nodesJSON.nodes[i].alias,
+				address: null
+			});
+	}
+
+	let innerNodes = h.nodes.length;
+
+	for(var i=0;i<innerNodes;i++){
+		let innerCounter = 0;
+		let channelsLength = channelsJSON.channels.length;
+
+		for(ii=0;ii<channelsLength;ii++){
+			if(channelsJSON.channels[ii].destination === h.nodes[i].id){
+				innerCounter++;
+			}
+		}
+		
+		h.connections.push(innerCounter);
+	}
+	 
+	var i,
+		s,
+		N = nodesJSON.nodes.length,
+		E = channelsJSON.channels.length,
+		g = {
+		  nodes: [],
+		  edges: []
+		};
+
+	for (i = 0; i < N; i++)
+	  g.nodes.push({
+		id: h.nodes[i].id,
+		label: h.nodes[i].label,
+		x: Math.random() *25,
+		y: Math.random() *10,
+		size: h.connections[i] +30,
+		color: '#991188'
+	  });
+
+	for (i = 0; i < E; i++)
+	  g.edges.push({
+		id: channelsJSON.channels[i].short_channel_id+i,
+		source: channelsJSON.channels[i].source,
+		target: channelsJSON.channels[i].destination,
+		size: Math.random(),
+		color: '#ccc'
+	  });
+	  
+	 
+
+	// Instantiate sigma:
+	s = new sigma({
+	  graph: g,
+	  settings: {
+		enableHovering: true
+	  }
+	});
+
+	s.addRenderer({
+	  id: 'main',
+	  type: 'svg',
+	  container: document.getElementById('graph-container'),
+	  freeStyle: true
+	});
+
+	s.refresh();
+
+	// Binding silly interactions
+	function mute(node) {
+	  if (!~node.getAttribute('class').search(/muted/))
+		node.setAttributeNS(null, 'class', node.getAttribute('class') + ' muted');
+	}
+
+	function unmute(node) {
+	  node.setAttributeNS(null, 'class', node.getAttribute('class').replace(/(\s|^)muted(\s|$)/g, '$2'));
+	}
+
+	$('.sigma-node').click(function() {
+
+	  // Muting
+	  $('.sigma-node, .sigma-edge').each(function() {
+		mute(this);
+	  });
+
+	  // Unmuting neighbors
+	  var neighbors = s.graph.neighborhood($(this).attr('data-node-id'));
+	  neighbors.nodes.forEach(function(node) {
+		unmute($('[data-node-id="' + node.id + '"]')[0]);
+	  });
+
+	  neighbors.edges.forEach(function(edge) {
+		unmute($('[data-edge-id="' + edge.id + '"]')[0]);
+	  });
+	});
+
+	s.bind('clickStage', function() {
+	  $('.sigma-node, .sigma-edge').each(function() {
+		unmute(this);
+	  });
+	});
+			
+			
+} //end on window load				
+				
+				
+ function nodeSearch(){
+		document.getElementById("searchOutput").innerHTML = "";
+		var userInputText = document.getElementById("search").value;
+		 
+		var uitl = userInputText.length;
+		//if(uitl > 0){
+		   var uilwr = userInputText.toLowerCase();
+		   hn = h.nodes.length;
+			for(i=0;i<hn;i++){
+				if(h.nodes[i].label){
+				   var checkNSub = h.nodes[i].label.substring(0, uitl);
+					var checkNLwer = checkNSub.toLowerCase();
+					if(checkNLwer === uilwr){
+						console.log(h.nodes[i].label+" "+h.connections[i]);
+						$("#searchOutput").append("<br><h4><span class='nodeAlias'>"+h.nodes[i].label+'</span><span class="channels">'+h.connections[i]+"</span><br><input type='text' id='"+i+"' value='"+h.nodes[i].id+"' readonly></h4>");
+					}
+				} else {
+					//
+				} 
+			}   
+		//}
+		
+	 }
+
+
+    
+</script>
+</body>
+</html>
