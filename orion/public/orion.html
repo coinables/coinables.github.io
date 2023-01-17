@@ -49,6 +49,7 @@
 <script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
 <script src="../src/misc/sigma.misc.drawHovers.js"></script>
 <script src="../plugins/sigma.plugins.neighborhoods/sigma.plugins.neighborhoods.js"></script>
+<script src="../plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js"></script>
 <script src="../plugins/sigma.layout.forceAtlas2/supervisor.js"></script>
 <script src="../plugins/sigma.layout.forceAtlas2/worker.js"></script>
 <script src="lib/jquery-2.1.1.min.js"></script>
@@ -197,6 +198,51 @@ function explore(){
 }
 
 window.onload = function(){
+
+	knownAddresses = [
+		{"address":"bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h","label":"Binance Hot Wallet"},
+		{"address":"325gSHHe7UGvzEc9kGx43VqPboXUVwa26i","label":"FTX Hot Wallet"},
+		{"address":"bc1q9d4ywgfnd8h43da5tpcxcn6ajv590cg6d3tg6axemvljvt2k76zs50tv4q","label":"Luna Foundation Guard"},
+		{"address":"18saWjMCchDTGWunefuDJSWNdz4p6KtfBL","label":"Coinbase Cold Wallet"},
+		{"address":"13nwifHUz5ZfHuQhk5ETJ4BhmqbuQdvTFp","label":"Coinbase Cold Wallet"},
+		{"address":"1PL2cmmMLmGGDtqaSZJY8DR1iKJaziEPJv","label":"Coinbase Cold Wallet"},
+		{"address":"1Dt4Q2ofKUtHwvjN45tAUfikNBfJrDERcZ","label":"Coinbase Cold Wallet"},
+		{"address":"3CP62cZgAgx4yAHnxNFCqT17LJERhVwz4C","label":"CashApp Hot Wallet"},
+		{"address":"1Kr6QSydW9bFQG1mXiPNNu6WpJGmUa9i1g","label":"Bitfinex Hot Wallet"},
+		{"address":"37biYvTEcBVMoR1NGkPTGvHUuLTrzcLpiv","label":"Bitvavo Hot Wallet"},
+		{"address":"38MfJkxPkpwsZxkyfESwjdaKBdXrV8DpWr","label":"Coinbase Hot Wallet"},
+		{"address":"38XnPvu9PmonFU9WouPXUjYbW91wa5MerL","label":"Coinbene Hot Wallet"},
+		{"address":"1BKN5obhkdoequshHnn96zZvFi3wCEdfiC","label":"Houbi Hot Wallet"},
+		{"address":"1VERF5rDyVoS4mPCbK68vSGpVo95cAXRm","label":"Gemini Hot Wallet"},
+		{"address":"143gLvWYUojXaWZRrxquRKpVNTkhmr415B","label":"Houbi Hot Wallet"}
+	];
+	knownCheck = [
+		"bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h",
+		"325gSHHe7UGvzEc9kGx43VqPboXUVwa26i",
+		"bc1q9d4ywgfnd8h43da5tpcxcn6ajv590cg6d3tg6axemvljvt2k76zs50tv4q",
+		"18saWjMCchDTGWunefuDJSWNdz4p6KtfBL",
+		"13nwifHUz5ZfHuQhk5ETJ4BhmqbuQdvTFp",
+		"1PL2cmmMLmGGDtqaSZJY8DR1iKJaziEPJv",
+		"1Dt4Q2ofKUtHwvjN45tAUfikNBfJrDERcZ",
+		"3CP62cZgAgx4yAHnxNFCqT17LJERhVwz4C",
+		"1Kr6QSydW9bFQG1mXiPNNu6WpJGmUa9i1g",
+		"37biYvTEcBVMoR1NGkPTGvHUuLTrzcLpiv",
+		"38MfJkxPkpwsZxkyfESwjdaKBdXrV8DpWr",
+		"38XnPvu9PmonFU9WouPXUjYbW91wa5MerL",
+		"1BKN5obhkdoequshHnn96zZvFi3wCEdfiC",
+		"1VERF5rDyVoS4mPCbK68vSGpVo95cAXRm",
+		"143gLvWYUojXaWZRrxquRKpVNTkhmr415B"
+	];
+	
+	function checkList(checkOutputScript){
+		if(knownCheck.includes(checkOutputScript)){
+			var findindex = knownCheck.indexOf(checkOutputScript);
+			var thislabel = knownAddresses[findindex].label;
+		} else {
+			var thislabel = checkOutputScript;
+		}
+		return thislabel;
+	}
 	
 	$("#splash").fadeOut(5000);
     $("#container").fadeIn(8000);
@@ -234,7 +280,9 @@ window.onload = function(){
 						
 						} else {
 							duplicateCheck.push(txapi.vin[i].prevout.scriptpubkey_address);
-							nodesJSON.nodes.push({"nodeid":txapi.vin[i].prevout.scriptpubkey_address,"alias":txapi.vin[i].prevout.scriptpubkey_address})
+							//check if address is a known address
+							let lookuplabel = checkList(txapi.vin[i].prevout.scriptpubkey_address)
+							nodesJSON.nodes.push({"nodeid":txapi.vin[i].prevout.scriptpubkey_address,"alias":lookuplabel})
 						}
 						
 					}
@@ -243,7 +291,9 @@ window.onload = function(){
 						
 						} else {
 							duplicateCheck.push(txapi.vout[ii].scriptpubkey_address);
-							nodesJSON.nodes.push({"nodeid":txapi.vout[ii].scriptpubkey_address,"alias":txapi.vout[ii].scriptpubkey_address})
+							//check if address is a known address
+							let lookuplabel = checkList(txapi.vout[ii].scriptpubkey_address)
+							nodesJSON.nodes.push({"nodeid":txapi.vout[ii].scriptpubkey_address,"alias":lookuplabel})
 						}
 							
 					}
@@ -302,7 +352,8 @@ window.onload = function(){
 							
 							} else {
 								duplicateCheck.push(txapispent.vout[iii].scriptpubkey_address);
-								nodesJSON.nodes.push({"nodeid":txapispent.vout[iii].scriptpubkey_address,"alias":txapispent.vout[iii].scriptpubkey_address})
+								let lookuplabel = checkList(txapispent.vout[iii].scriptpubkey_address)
+								nodesJSON.nodes.push({"nodeid":txapispent.vout[iii].scriptpubkey_address,"alias":lookuplabel})
 							}
 							
 						}
@@ -313,7 +364,8 @@ window.onload = function(){
 							
 							} else {
 								duplicateCheck.push(txapispent.vin[iiii].prevout.scriptpubkey_address);
-								nodesJSON.nodes.push({"nodeid":txapispent.vin[iiii].prevout.scriptpubkey_address,"alias":txapispent.vin[iiii].prevout.scriptpubkey_address})
+								let lookuplabel = checkList(txapispent.vin[iiii].prevout.scriptpubkey_address)
+								nodesJSON.nodes.push({"nodeid":txapispent.vin[iiii].prevout.scriptpubkey_address,"alias":lookuplabel})
 							}
 							
 							channelsJSON.channels.push({"source":txapispent.vin[iiii].prevout.scriptpubkey_address, "destination":spenttxid, "short_channel_id":spenttxid+iiii})
@@ -400,6 +452,8 @@ window.onload = function(){
 	s = new sigma({
 	  graph: g,
 	  settings: {
+		mouseEnabled: true,
+		touchEnabled: true,
 		enableHovering: true
 	  }
 	});
@@ -409,7 +463,7 @@ window.onload = function(){
 	  type: 'svg',
 	  container: document.getElementById('graph-container'),
 	  freeStyle: true
-	});
+	});       
 
 	s.refresh();
 
