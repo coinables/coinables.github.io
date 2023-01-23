@@ -59,13 +59,15 @@
 		background-color: #2e1f2e;
 		margin: 0px;
 		padding: 0px;
+		overflow: hidden;
+		height: 100%;
     }
     #graph-container {
-      top: -20px;
+      top: -50px;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 600px;
+      height: 720px;
       position: relative;
       background-color: #2d1e2d;
     }
@@ -73,7 +75,11 @@
       stroke: #57b6f2;
     }
     .sigma-node {
-      fill: #990188;
+      stroke: #14191C;
+      stroke-width: 2px;
+    }
+	.sigma-nodetx {
+      fill: #009988;
       stroke: #14191C;
       stroke-width: 2px;
     }
@@ -140,15 +146,21 @@
     transform: rotate(0deg);
     right:8px;
 }
+	input{
+		background-color: #2d1e2d;
+		color: #f3f3f3;
+		border: 2px solid #000;
+		border-radius: 7px;
+	}
     h4{
         margin: -5px;
     }
     #searchOutput{
-        width: 30%;
         position: absolute;
         right: 4px;
         top:50px;
         text-align: right;
+		z-index: 10;
     }
     #splash{
 		width: 100%;
@@ -166,11 +178,17 @@
 	#txbar{
 		display: inline-block;
 		position: absolute; 
-		top: 0px;
-		border: 3px solid #0e1e0e;
-		border-radius: 13px;
-		padding: 7px;
+		top: 5px;
 		left: 26%;
+	}
+	#navbanner{
+		position: fixed;
+		top: 0px;
+		display: block;
+		width: 100%;
+		padding: 7px;
+		background-color: #0e0f0e;
+		color: #fff;
 	}
   </style>
 </head>
@@ -182,13 +200,13 @@
             <div class="eye-2"></div>
             
         </div><br><em>ORION</em><br><span style="position:relative; top: -10px; font-size:16px;"><em>[TRANSACTION VISUALIZER]</em></span></center></div>
-<div id="container">  
+<div id="container"> 
 <div id="graph-container"></div>  
 </div>
-<input type="text" placeholder="EXPLORE RELATED" style="padding: 4px; font-size: 16px; width: 350px; margin-left: 15px; margin-bottom: 15px;" onkeyup="return nodeSearch();" id="search">
+
 <div id="searchOutput"></div>
-<div id="txbar"><input type="text" id="txQuery" placeholder="TRANSACTION ID" style="padding: 4px; font-size: 16px; width: 550px;"><button onclick="explore();" style="padding: 4px; font-size: 16px;">GO</button></div>
-<br><br>
+<div id="navbanner"><span style="color: #fff; font-size: 18px;">ORION</span><div id="txbar"><input type="text" id="txQuery" placeholder="TRANSACTION ID" style="padding: 3px; font-size: 11px; width: 550px;"> <button onclick="explore();" style="padding: 4px; font-weight: bold; font-size: 9px; background-color: #0e0f0e; color: #AEE7F8; border: 1px solid #2e2f2e; cursor: pointer;">VIEW</button>&nbsp;<input type="text" placeholder="SEARCH/FILTER THIS VISUAL" style="padding: 3px; font-size: 9px; margin-left: 15px; width:200px;" onkeyup="return nodeSearch();" id="search"></div></div>
+
 <script>
 function explore(){
 	var txInput = $("#txQuery").val();
@@ -427,15 +445,32 @@ window.onload = function(){
 		  edges: []
 		};
 
-	for (i = 0; i < N; i++)
+	for (i = 0; i < N; i++){
+		console.log(h.connections[i])
+		var nodeColor = ""
+		var nodeSize = ""
+		if(h.connections[i] > 2){
+			nodeColor = "#AEE7F8"
+				if(h.connections[i] > 12){ nodeColor = "#fff"}
+		} else {
+			nodeColor = "#990188"
+		}
+		
+		if(h.connections[i] > 25){
+			nodeSize = h.connections[i]
+			nodeSize = nodeSize > 100 ? 100 : nodeSize;
+		} else {
+			nodeSize = 25
+		}
 	  g.nodes.push({
 		id: h.nodes[i].id,
 		label: h.nodes[i].label,
 		x: Math.random() *25,
 		y: Math.random() *10,
-		size: h.connections[i] +30,
-		color: '#991188'
+		size: nodeSize,
+		color: nodeColor
 	  });
+	 }
 
 	for (i = 0; i < E; i++)
 	  g.edges.push({
