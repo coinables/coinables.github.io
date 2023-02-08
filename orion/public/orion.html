@@ -268,11 +268,36 @@ window.onload = function(){
     $("#container").fadeIn(8000);
     
 	var searchParams = new URLSearchParams(window.location.search);
+	
 
 	if(searchParams.has('q')){
 		var param = searchParams.get('q');
-	} else {
-		var param = "7549987d570b00adf44f1d467df144c5ed096af3e9d533743106e1d19833deda";
+	} else {	
+		//default tx to load if random recent tx ajax query fails
+		var param = "0f58c9a7aee48bd72ffd929fd3ac80bf95db5be13a6493b2f954de9ae659710d";
+		
+		//fetch the blockhash tip
+		$.ajax({
+			async: false,
+			type: "GET",
+			url: "https://mempool.space/api/blocks/tip/hash",
+			success: function(latestblockhash) {
+				//use blockhash tip to fetch list of transactions
+				$.ajax({
+					async: false,
+					type: "GET",
+					url: "https://mempool.space/api/block/"+latestblockhash+"/txids",
+					success: function(latesttxs) {
+						//pick a random transaction to visualize
+						let numtxs = latesttxs.length-1;
+						let randomtx = Math.random() * numtxs;
+						randomtx = Math.floor(randomtx); 
+						param = latesttxs[randomtx];
+					}
+				})
+			}
+		});	
+		
 	}
 
 	console.log("start");
