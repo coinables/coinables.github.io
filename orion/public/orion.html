@@ -276,29 +276,46 @@ window.onload = function(){
 		//default tx to load if random recent tx ajax query fails
 		var param = "0f58c9a7aee48bd72ffd929fd3ac80bf95db5be13a6493b2f954de9ae659710d";
 		
-		//fetch the blockhash tip
+		//fetch the blockheight tip
 		$.ajax({
 			async: false,
 			type: "GET",
-			url: "https://mempool.space/api/blocks/tip/hash",
-			success: function(latestblockhash) {
-				//use blockhash tip to fetch list of transactions
+			url: "https://mempool.space/api/blocks/tip/height",
+			success: function(latestblockheight) {
+				//use blockheight tip to calc 10 blocks ago
+				var tenblocksago = latestblockheight-10;
+				
 				$.ajax({
 					async: false,
 					type: "GET",
-					url: "https://mempool.space/api/block/"+latestblockhash+"/txids",
-					success: function(latesttxs) {
-						//pick a random transaction to visualize
-						let numtxs = latesttxs.length-1;
-						let randomtx = Math.random() * numtxs;
-						randomtx = Math.floor(randomtx); 
-						param = latesttxs[randomtx];
+					url: "https://mempool.space/api/block-height/"+tenblocksago,
+					success: function(latestblockhash){
+						
+						
+							$.ajax({
+								async: false,
+								type: "GET",
+								url: "https://mempool.space/api/block/"+latestblockhash+"/txids",
+								success: function(latesttxs) {
+									//pick a random transaction to visualize
+									let numtxs = latesttxs.length-1;
+									let randomtx = Math.random() * numtxs;
+									randomtx = Math.floor(randomtx); 
+									param = latesttxs[randomtx];
+								}
+							})
+						
+						
 					}
 				})
+				
+				
 			}
 		});	
 		
 	}
+	
+	document.getElementById("txQuery").value = param;
 
 	console.log("start");
 	var duplicateCheck = [];
@@ -308,7 +325,7 @@ window.onload = function(){
 	
 	var parentTx = param;
 	var txsmelt = parentTx+"smelt";
-	nodesJSON.nodes.push({"nodeid":txsmelt,"alias":parentTx})
+	nodesJSON.nodes.push({"nodeid":txsmelt,"alias":parentTx,"sats":null})
 
 	var urlGetTx = "https://mempool.space/api/tx/"+parentTx; 
 	var urlGetOutputSpends = "https://mempool.space/api/tx/"+parentTx+"/outspends";
@@ -327,7 +344,7 @@ window.onload = function(){
 							duplicateCheck.push(txapi.vin[i].prevout.scriptpubkey_address);
 							//check if address is a known address
 							let lookuplabel = checkList(txapi.vin[i].prevout.scriptpubkey_address)
-							nodesJSON.nodes.push({"nodeid":txapi.vin[i].prevout.scriptpubkey_address,"alias":lookuplabel})
+							nodesJSON.nodes.push({"nodeid":txapi.vin[i].prevout.scriptpubkey_address,"alias":lookuplabel,"sats":txapi.vin[i].prevout.value})
 						}
 						
 					}
@@ -338,7 +355,7 @@ window.onload = function(){
 							duplicateCheck.push(txapi.vout[ii].scriptpubkey_address);
 							//check if address is a known address
 							let lookuplabel = checkList(txapi.vout[ii].scriptpubkey_address)
-							nodesJSON.nodes.push({"nodeid":txapi.vout[ii].scriptpubkey_address,"alias":lookuplabel})
+							nodesJSON.nodes.push({"nodeid":txapi.vout[ii].scriptpubkey_address,"alias":lookuplabel,"sats":txapi.vout[ii].value})
 						}
 							
 					}
@@ -347,7 +364,7 @@ window.onload = function(){
 						
 						} else {
 							duplicateCheck.push(txapi.vin[iii].txid);
-							nodesJSON.nodes.push({"nodeid":txapi.vin[iii].txid,"alias":txapi.vin[iii].txid})
+							nodesJSON.nodes.push({"nodeid":txapi.vin[iii].txid,"alias":txapi.vin[iii].txid,"sats":null})
 							channelsJSON.channels.push({"source":txapi.vin[iii].txid, "destination":txapi.vin[iii].prevout.scriptpubkey_address, "short_channel_id":"pparent"+txapi.vin[iii].txid+iii})
 						}
 						channelsJSON.channels.push({"source":txapi.vin[iii].prevout.scriptpubkey_address, "destination":txsmelt, "short_channel_id":txapi.vin[iii].txid+iii})
@@ -380,7 +397,7 @@ window.onload = function(){
 					
 					} else {
 						duplicateCheck.push(spenttxid)
-						nodesJSON.nodes.push({"nodeid":spenttxid,"alias":spenttxid})
+						nodesJSON.nodes.push({"nodeid":spenttxid,"alias":spenttxid,"sats":null})
 					}
 					
 										
@@ -398,7 +415,7 @@ window.onload = function(){
 							} else {
 								duplicateCheck.push(txapispent.vout[iii].scriptpubkey_address);
 								let lookuplabel = checkList(txapispent.vout[iii].scriptpubkey_address)
-								nodesJSON.nodes.push({"nodeid":txapispent.vout[iii].scriptpubkey_address,"alias":lookuplabel})
+								nodesJSON.nodes.push({"nodeid":txapispent.vout[iii].scriptpubkey_address,"alias":lookuplabel,"sats":txapispent.vout[iii].value})
 							}
 							
 						}
@@ -410,7 +427,7 @@ window.onload = function(){
 							} else {
 								duplicateCheck.push(txapispent.vin[iiii].prevout.scriptpubkey_address);
 								let lookuplabel = checkList(txapispent.vin[iiii].prevout.scriptpubkey_address)
-								nodesJSON.nodes.push({"nodeid":txapispent.vin[iiii].prevout.scriptpubkey_address,"alias":lookuplabel})
+								nodesJSON.nodes.push({"nodeid":txapispent.vin[iiii].prevout.scriptpubkey_address,"alias":lookuplabel,"sats":txapispent.vin[iiii].prevout.value})
 							}
 							
 							channelsJSON.channels.push({"source":txapispent.vin[iiii].prevout.scriptpubkey_address, "destination":spenttxid, "short_channel_id":spenttxid+iiii})
@@ -444,7 +461,7 @@ window.onload = function(){
 			h.nodes.push({
 				id: nodesJSON.nodes[i].nodeid,
 				label: nodesJSON.nodes[i].alias,
-				address: null
+				sats: nodesJSON.nodes[i].sats
 			});
 	}
 
@@ -482,12 +499,15 @@ window.onload = function(){
 		} else {
 			nodeColor = "#990188"
 		}
+		let loopsats = h.nodes[i].sats;
+		loopsats = loopsats/100000000;
+		loopsats = Math.floor(loopsats)
 		
-		if(h.connections[i] > 25){
-			nodeSize = h.connections[i]
-			nodeSize = nodeSize > 100 ? 100 : nodeSize;
+		if(loopsats > 1){
+			nodeSize = 20
+			//nodeSize = nodeSize > 5 ? 5 : nodeSize;
 		} else {
-			nodeSize = 25
+			nodeSize = 9
 		}
 	  g.nodes.push({
 		id: h.nodes[i].id,
@@ -580,8 +600,10 @@ window.onload = function(){
 				   var checkNSub = h.nodes[i].label.substring(0, uitl);
 					var checkNLwer = checkNSub.toLowerCase();
 					if(checkNLwer === uilwr){
+						let loopval = h.nodes[i].sats / 100000000
+						loopval = loopval.toFixed(8)
 						console.log(h.nodes[i].label+" "+h.connections[i]);
-						$("#searchOutput").append("<br><h4><span class='nodeAlias'>"+h.nodes[i].label+'</span><span class="channels">'+h.connections[i]+"</span><br><input type='text' id='"+i+"' value='"+h.nodes[i].id+"' readonly></h4>");
+						$("#searchOutput").append("<br><h4><span class='nodeAlias'>"+h.nodes[i].label+'</span><span class="channels">'+h.connections[i]+"</span><br><input type='text' id='"+i+"' value='"+h.nodes[i].id+"' readonly><br><input type='text' id='"+i+"sats' value='"+loopval+" BTC' readonly></h4>");
 					}
 				} else {
 					//
