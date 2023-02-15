@@ -247,7 +247,9 @@ window.onload = function(){
 		{"address":"1GQdrgqAbkeEPUef1UpiTc4X1mUHMcyuGW","label":"Binance"},
 		{"address":"bc1q0qlagnl53xz6g7fl8tapwa0zt9u2nztx0tpyp3","label":"Kraken"},
 		{"address":"3E2adcep2NRRpriLnWn1AvW3AHKqBx2mMr","label":"Kraken"},
-		{"address":"3KTQYXvjteNoMECi62JYuqXobYQpcHjoVs","label":"Kraken"}
+		{"address":"3KTQYXvjteNoMECi62JYuqXobYQpcHjoVs","label":"Kraken"},
+		{"address":"bc1q8yja3gw33ngd8aunmfr4hj820adc9nlsv0syvz","label":"Kucoin"},
+		{"address":"1HiXa8YkzaSnxAHN9YBjHDrVWrDhaFGtB1","label":"ViaBTC"}
 	];
 	knownCheck = [
 		"bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h",
@@ -279,7 +281,9 @@ window.onload = function(){
 		"1GQdrgqAbkeEPUef1UpiTc4X1mUHMcyuGW",
 		"bc1q0qlagnl53xz6g7fl8tapwa0zt9u2nztx0tpyp3",
 		"3E2adcep2NRRpriLnWn1AvW3AHKqBx2mMr",
-		"3KTQYXvjteNoMECi62JYuqXobYQpcHjoVs"
+		"3KTQYXvjteNoMECi62JYuqXobYQpcHjoVs",
+		"bc1q8yja3gw33ngd8aunmfr4hj820adc9nlsv0syvz",
+		"1HiXa8YkzaSnxAHN9YBjHDrVWrDhaFGtB1"
 	];
 	
 	function checkList(checkOutputScript){
@@ -363,7 +367,7 @@ window.onload = function(){
 			type: "GET",
 			url: urlGetTx,
 			success: function(result) {
-				console.log("first ajax success");
+				//console.log("first ajax success");
 				var txapi = result;
 					for(i=0;i<txapi.vin.length;i++){
 						if(duplicateCheck.includes(txapi.vin[i].prevout.scriptpubkey_address)){
@@ -411,7 +415,7 @@ window.onload = function(){
 		url: urlGetOutputSpends,
 		success: function(result) {
 			//console.log(result)
-			console.log("second ajax success");
+			//console.log("second ajax success");
 			var txapiouts = result;
 					
 			for(i=0;i<txapiouts.length;i++){
@@ -434,7 +438,7 @@ window.onload = function(){
 					type: "GET",
 					url: "https://mempool.space/api/tx/"+spenttxid,
 					success: function(result) {
-						console.log("third ajax success");
+						//console.log("third ajax success");
 						var txapispent = result;
 												
 						for(iii=0;iii<txapispent.vout.length;iii++){
@@ -586,6 +590,7 @@ window.onload = function(){
 	function unmute(node) {
 	  node.setAttributeNS(null, 'class', node.getAttribute('class').replace(/(\s|^)muted(\s|$)/g, '$2'));
 	}
+	
 
 	$('.sigma-node').click(function() {
 
@@ -604,7 +609,7 @@ window.onload = function(){
 		unmute($('[data-edge-id="' + edge.id + '"]')[0]);
 	  });
 	});
-
+	
 	s.bind('clickStage', function() {
 	  $('.sigma-node, .sigma-edge').each(function() {
 		unmute(this);
@@ -613,7 +618,19 @@ window.onload = function(){
 			
 			
 } //end on window load				
-				
+			
+function searchshow(innodeid){
+		
+	  var clickednodeid = innodeid;
+	  console.log(clickednodeid);
+	  
+	  // Unmuting neighbors
+	 var selectednode = $('.sigma-node').filter('[data-node-id="'+clickednodeid+'"]');
+	 console.dir(selectednode);
+	 selectednode.attr("fill","#069b11");
+	 selectednode.attr("r","16");
+	
+}			
 				
  function nodeSearch(){
 		document.getElementById("searchOutput").innerHTML = "";
@@ -631,7 +648,7 @@ window.onload = function(){
 						let loopval = h.nodes[i].sats / 100000000
 						loopval = loopval.toFixed(8)
 						console.log(h.nodes[i].label+" "+h.connections[i]);
-						$("#searchOutput").append("<br><h4><span class='nodeAlias'>"+h.nodes[i].label+'</span><span class="channels">'+h.connections[i]+"</span><br><input type='text' id='"+i+"' value='"+h.nodes[i].id+"' readonly><br><input type='text' id='"+i+"sats' value='"+loopval+" BTC' readonly></h4>");
+						$("#searchOutput").append("<br><h4><span class='nodeAlias'>"+h.nodes[i].label+'</span><span class="channels">'+h.connections[i]+"</span><br><input type='text' id='"+i+"' value='"+h.nodes[i].id+"' onclick='return searchshow(this.value);'><br><input type='text' id='"+i+"sats' value='"+loopval+" BTC' readonly></h4>");
 					}
 				} else {
 					//
