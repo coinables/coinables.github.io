@@ -205,15 +205,41 @@
 </div>
 
 <div id="searchOutput"></div>
-<div id="navbanner"><span style="color: #fff; font-size: 18px;">ORION</span><div id="txbar"><input type="text" id="txQuery" placeholder="TRANSACTION ID" style="padding: 3px; font-size: 11px; width: 550px;"> <button onclick="explore();" style="padding: 4px; font-weight: bold; font-size: 9px; background-color: #0e0f0e; color: #AEE7F8; border: 1px solid #2e2f2e; cursor: pointer;">VIEW</button>&nbsp;<input type="text" placeholder="SEARCH/FILTER THIS VISUAL" style="padding: 3px; font-size: 9px; margin-left: 15px; width:200px;" onkeyup="return nodeSearch();" id="search"></div></div>
+<div id="navbanner"><span style="color: #fff; font-size: 18px;">ORION</span><div id="txbar"><input type="text" id="txQuery" placeholder="TRANSACTION ID" style="padding: 3px; font-size: 11px; width: 550px;"> <button onclick="explore();" style="padding: 4px; font-weight: bold; font-size: 9px; background-color: #0e0f0e; color: #AEE7F8; border: 1px solid #2e2f2e; cursor: pointer;">VIEW</button>&nbsp;<input type="text" placeholder="SEARCH/FILTER THIS VISUAL" style="padding: 3px; font-size: 9px; margin-left: 15px; width:200px;" onkeyup="return nodeSearch();" id="search">&nbsp; <button onclick="txMemoryAdd();" style="padding: 4px; font-weight: bold; font-size: 9px; background-color: #0e0f0e; color: #AEE7F8; border: 1px solid #2e2f2e; cursor: pointer;">M+</button>  <button onclick="txMemoryRemove();" style="padding: 4px; font-weight: bold; font-size: 9px; background-color: #0e0f0e; color: #AEE7F8; border: 1px solid #2e2f2e; cursor: pointer;">M-</button></div></div>
 
 <script>
 function explore(){
 	var txInput = $("#txQuery").val();
 	
-	var url = "../public/orion.html?q="+txInput;
+	var url = "../public/link.html?q="+txInput;
 	window.location.replace(url);
 }
+
+	console.log("start");
+	//check if memory exists
+	if(localStorage.OCHAN){
+		let getDup = localStorage.getItem("ODUP");
+		getDup = JSON.parse(getDup);
+		let getNodes = localStorage.getItem("ONODES");
+		getNodes  = JSON.parse(getNodes);
+		let getChan = localStorage.getItem("OCHAN");
+		getChan  = JSON.parse(getChan);
+		var duplicateCheck = [];
+		var nodesJSON = { "nodes" : []};
+		var channelsJSON = { "channels" : []};
+		duplicateCheck = getDup;
+		nodesJSON.nodes = getNodes;
+		channelsJSON.channels = getChan;
+		var colorChannel = "#990000";
+	} else {
+		//leave blank
+		var duplicateCheck = [];
+		var nodesJSON = { "nodes" : []};
+		var channelsJSON = { "channels" : []};
+		var colorChannel = "#000099";
+	}
+
+	
 
 window.onload = function(){
 
@@ -349,15 +375,20 @@ window.onload = function(){
 	
 	document.getElementById("txQuery").value = param;
 
-	console.log("start");
-	var duplicateCheck = [];
-	var nodesJSON = { "nodes" : []};
-	var channelsJSON = { "channels" : []};
+
+	
+	
 		
 	
 	var parentTx = param;
-	var txsmelt = parentTx+"smelt";
-	nodesJSON.nodes.push({"nodeid":txsmelt,"alias":parentTx,"sats":null})
+	var txsmelt = parentTx;
+	if(duplicateCheck.includes(txsmelt)){
+	
+	} else {
+			duplicateCheck.push(txsmelt);
+			nodesJSON.nodes.push({"nodeid":txsmelt,"alias":parentTx,"sats":null})
+	}
+	
 
 	var urlGetTx = "https://mempool.space/api/tx/"+parentTx; 
 	var urlGetOutputSpends = "https://mempool.space/api/tx/"+parentTx+"/outspends";
@@ -376,7 +407,7 @@ window.onload = function(){
 							duplicateCheck.push(txapi.vin[i].prevout.scriptpubkey_address);
 							//check if address is a known address
 							let lookuplabel = checkList(txapi.vin[i].prevout.scriptpubkey_address)
-							nodesJSON.nodes.push({"nodeid":txapi.vin[i].prevout.scriptpubkey_address,"alias":lookuplabel,"sats":txapi.vin[i].prevout.value})
+							nodesJSON.nodes.push({"nodeid":txapi.vin[i].prevout.scriptpubkey_address,"channelColor":colorChannel,"alias":lookuplabel,"sats":txapi.vin[i].prevout.value})
 						}
 						
 					}
@@ -387,7 +418,7 @@ window.onload = function(){
 							duplicateCheck.push(txapi.vout[ii].scriptpubkey_address);
 							//check if address is a known address
 							let lookuplabel = checkList(txapi.vout[ii].scriptpubkey_address)
-							nodesJSON.nodes.push({"nodeid":txapi.vout[ii].scriptpubkey_address,"alias":lookuplabel,"sats":txapi.vout[ii].value})
+							nodesJSON.nodes.push({"nodeid":txapi.vout[ii].scriptpubkey_address,"channelColor":colorChannel, "alias":lookuplabel,"sats":txapi.vout[ii].value})
 						}
 							
 					}
@@ -396,13 +427,13 @@ window.onload = function(){
 						
 						} else {
 							duplicateCheck.push(txapi.vin[iii].txid);
-							nodesJSON.nodes.push({"nodeid":txapi.vin[iii].txid,"alias":txapi.vin[iii].txid,"sats":null})
-							channelsJSON.channels.push({"source":txapi.vin[iii].txid, "destination":txapi.vin[iii].prevout.scriptpubkey_address, "short_channel_id":"pparent"+txapi.vin[iii].txid+iii})
+							nodesJSON.nodes.push({"nodeid":txapi.vin[iii].txid,"channelColor":colorChannel, "alias":txapi.vin[iii].txid,"sats":null})
+							channelsJSON.channels.push({"source":txapi.vin[iii].txid, "destination":txapi.vin[iii].prevout.scriptpubkey_address, "channelColor":colorChannel, "short_channel_id":"pparent"+txapi.vin[iii].txid+iii})
 						}
-						channelsJSON.channels.push({"source":txapi.vin[iii].prevout.scriptpubkey_address, "destination":txsmelt, "short_channel_id":txapi.vin[iii].txid+iii})
+						channelsJSON.channels.push({"source":txapi.vin[iii].prevout.scriptpubkey_address, "channelColor":colorChannel, "destination":txsmelt, "short_channel_id":txapi.vin[iii].txid+iii})
 					}
 					for(iiii=0;iiii<txapi.vout.length;iiii++){
-						channelsJSON.channels.push({"source":txsmelt, "destination":txapi.vout[iiii].scriptpubkey_address, "short_channel_id":parentTx+iiii})
+						channelsJSON.channels.push({"source":txsmelt, "channelColor":colorChannel, "destination":txapi.vout[iiii].scriptpubkey_address, "short_channel_id":parentTx+iiii})
 					}
 					
 				//console.log(nodesJSON);
@@ -429,7 +460,7 @@ window.onload = function(){
 					
 					} else {
 						duplicateCheck.push(spenttxid)
-						nodesJSON.nodes.push({"nodeid":spenttxid,"alias":spenttxid,"sats":null})
+						nodesJSON.nodes.push({"nodeid":spenttxid,"channelColor":colorChannel, "alias":spenttxid,"sats":null})
 					}
 					
 										
@@ -447,7 +478,7 @@ window.onload = function(){
 							} else {
 								duplicateCheck.push(txapispent.vout[iii].scriptpubkey_address);
 								let lookuplabel = checkList(txapispent.vout[iii].scriptpubkey_address)
-								nodesJSON.nodes.push({"nodeid":txapispent.vout[iii].scriptpubkey_address,"alias":lookuplabel,"sats":txapispent.vout[iii].value})
+								nodesJSON.nodes.push({"nodeid":txapispent.vout[iii].scriptpubkey_address,"channelColor":colorChannel, "alias":lookuplabel,"sats":txapispent.vout[iii].value})
 							}
 							
 						}
@@ -459,14 +490,14 @@ window.onload = function(){
 							} else {
 								duplicateCheck.push(txapispent.vin[iiii].prevout.scriptpubkey_address);
 								let lookuplabel = checkList(txapispent.vin[iiii].prevout.scriptpubkey_address)
-								nodesJSON.nodes.push({"nodeid":txapispent.vin[iiii].prevout.scriptpubkey_address,"alias":lookuplabel,"sats":txapispent.vin[iiii].prevout.value})
+								nodesJSON.nodes.push({"nodeid":txapispent.vin[iiii].prevout.scriptpubkey_address,"channelColor":colorChannel, "alias":lookuplabel,"sats":txapispent.vin[iiii].prevout.value})
 							}
 							
-							channelsJSON.channels.push({"source":txapispent.vin[iiii].prevout.scriptpubkey_address, "destination":spenttxid, "short_channel_id":spenttxid+iiii})
+							channelsJSON.channels.push({"source":txapispent.vin[iiii].prevout.scriptpubkey_address, "destination":spenttxid, "channelColor":colorChannel, "short_channel_id":spenttxid+iiii})
 						}
 						
 						for(v=0;v<txapispent.vout.length;v++){
-							channelsJSON.channels.push({"source":spenttxid, "destination":txapispent.vout[v].scriptpubkey_address, "short_channel_id":spenttxid+v})
+							channelsJSON.channels.push({"source":spenttxid, "channelColor":colorChannel, "destination":txapispent.vout[v].scriptpubkey_address, "short_channel_id":spenttxid+v})
 						}
 						
 					}
@@ -480,6 +511,8 @@ window.onload = function(){
 			
 		}
 	});	
+	
+	
 			
 	let nodesLength = nodesJSON.nodes.length;
 
@@ -493,7 +526,8 @@ window.onload = function(){
 			h.nodes.push({
 				id: nodesJSON.nodes[i].nodeid,
 				label: nodesJSON.nodes[i].alias,
-				sats: nodesJSON.nodes[i].sats
+				sats: nodesJSON.nodes[i].sats,
+				clr: nodesJSON.nodes[i].channelColor
 			});
 	}
 
@@ -529,7 +563,7 @@ window.onload = function(){
 			nodeColor = "#AEE7F8"
 				if(h.connections[i] > 12){ nodeColor = "#fff"}
 		} else {
-			nodeColor = "#990188"
+			nodeColor = h.nodes[i].clr
 		}
 		let loopsats = h.nodes[i].sats;
 		loopsats = loopsats/100000000;
@@ -541,13 +575,20 @@ window.onload = function(){
 		} else {
 			nodeSize = 9
 		}
+		var xcord = ""
+		if(h.nodes[i].clr=="#990000"){
+		    xcord = Math.random() *(25-13) + 13;
+		} else {
+			xcord = Math.random() *12
+		}
+		
 	  g.nodes.push({
 		id: h.nodes[i].id,
 		label: h.nodes[i].label,
-		x: Math.random() *25,
+		x: xcord,
 		y: Math.random() *10,
 		size: nodeSize,
-		color: nodeColor
+		color: h.nodes[i].clr
 	  });
 	 }
 
@@ -622,7 +663,23 @@ window.onload = function(){
 			
 			
 } //end on window load				
-			
+	
+function txMemoryAdd(){
+		console.log("memory add");
+		window.localStorage.setItem("ODUP", JSON.stringify(duplicateCheck));
+		window.localStorage.setItem("ONODES", JSON.stringify(nodesJSON.nodes)); 
+		window.localStorage.setItem("OCHAN", JSON.stringify(channelsJSON.channels));
+		alert("Saved to memory");
+	}
+	
+function txMemoryRemove(){
+	console.log("memory remove");
+	window.localStorage.removeItem("ODUP");
+	window.localStorage.removeItem("ONODES"); 
+	window.localStorage.removeItem("OCHAN");
+	alert("Memory cleared");
+}
+	
 function searchshow(innodeid){
 		
 	  var clickednodeid = innodeid;
