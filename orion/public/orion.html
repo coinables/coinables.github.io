@@ -263,7 +263,9 @@ window.onload = function(){
 		{"address":"1JZAzU9bknNPoSL6PXUZfs2o367FcTEgoC","label":"Huobi"},
 		{"address":"1EwyRYQrYbYGTVVHLQX44vrzagbHHMGYkn","label":"Huobi"},
 		{"address":"bc1qlqy2py5fryr64m7f6djv0sf8d5j7pchf70vzap","label":"Huobi"},
-		{"address":"bc1qng0keqn7cq6p8qdt4rjnzdxrygnzq7nd0pju8q","label":"Huobi"}
+		{"address":"bc1qng0keqn7cq6p8qdt4rjnzdxrygnzq7nd0pju8q","label":"Huobi"},
+		{"address":"16Uz37Q6TfvK2UFTgamn3dyRjnP2Wtf4p2","label":"Cumberland Mining"},
+		{"address":"bc1q8s3h3vw5xufdas890q29lpuca56r0ezqar0mvs","label":"Cumberland Mining"}
 	];
 	knownCheck = [
 		"bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h",
@@ -313,7 +315,9 @@ window.onload = function(){
 		"1JZAzU9bknNPoSL6PXUZfs2o367FcTEgoC",
 		"1EwyRYQrYbYGTVVHLQX44vrzagbHHMGYkn",
 		"bc1qlqy2py5fryr64m7f6djv0sf8d5j7pchf70vzap",
-		"bc1qng0keqn7cq6p8qdt4rjnzdxrygnzq7nd0pju8q"
+		"bc1qng0keqn7cq6p8qdt4rjnzdxrygnzq7nd0pju8q",
+		"16Uz37Q6TfvK2UFTgamn3dyRjnP2Wtf4p2",
+		"bc1q8s3h3vw5xufdas890q29lpuca56r0ezqar0mvs"
 	];
 	
 	function checkList(checkOutputScript){
@@ -338,39 +342,21 @@ window.onload = function(){
 		//default tx to load if random recent tx ajax query fails
 		var param = "0f58c9a7aee48bd72ffd929fd3ac80bf95db5be13a6493b2f954de9ae659710d";
 		
-		//fetch the blockheight tip
+		var randomKnownIndex = Math.random() * knownCheck.length;
+		randomKnownIndex = Math.floor(randomKnownIndex);
+		var randomKnown = knownCheck[randomKnownIndex];
+		
+		//fetch transactions from random known address
 		$.ajax({
 			async: false,
 			type: "GET",
-			url: "https://mempool.space/api/blocks/tip/height",
-			success: function(latestblockheight) {
-				//use blockheight tip to calc 10 blocks ago
-				var tenblocksago = latestblockheight-10;
+			url: "https://mempool.space/api/address/"+randomKnown+"/txs",
+			success: function(addrtxs) {
+				//pick a random transaction to visualize
+				var randomPick = Math.random() * addrtxs.length;
+				randomPick = Math.floor(randomPick);
 				
-				$.ajax({
-					async: false,
-					type: "GET",
-					url: "https://mempool.space/api/block-height/"+tenblocksago,
-					success: function(latestblockhash){
-						
-						
-							$.ajax({
-								async: false,
-								type: "GET",
-								url: "https://mempool.space/api/block/"+latestblockhash+"/txids",
-								success: function(latesttxs) {
-									//pick a random transaction to visualize
-									let numtxs = latesttxs.length-1;
-									let randomtx = Math.random() * numtxs;
-									randomtx = Math.floor(randomtx); 
-									param = latesttxs[randomtx];
-								}
-							})
-						
-						
-					}
-				})
-				
+				param = addrtxs[randomPick].txid;
 				
 			}
 		});	
