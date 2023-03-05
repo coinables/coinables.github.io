@@ -289,7 +289,13 @@ window.onload = function(){
 		{"address":"1JZAzU9bknNPoSL6PXUZfs2o367FcTEgoC","label":"Huobi"},
 		{"address":"1EwyRYQrYbYGTVVHLQX44vrzagbHHMGYkn","label":"Huobi"},
 		{"address":"bc1qlqy2py5fryr64m7f6djv0sf8d5j7pchf70vzap","label":"Huobi"},
-		{"address":"bc1qng0keqn7cq6p8qdt4rjnzdxrygnzq7nd0pju8q","label":"Huobi"}
+		{"address":"bc1qng0keqn7cq6p8qdt4rjnzdxrygnzq7nd0pju8q","label":"Huobi"},
+		{"address":"16Uz37Q6TfvK2UFTgamn3dyRjnP2Wtf4p2","label":"Cumberland Mining"},
+		{"address":"bc1q8s3h3vw5xufdas890q29lpuca56r0ezqar0mvs","label":"Cumberland Mining"},
+		{"address":"3PQstJuScWBgP1QAaxbCTpuzrYkG73dZi4","label":"BitFlyer"},
+		{"address":"3JcWcMPtxGaCuhKeucTMe1V865t7UhrNnT","label":"OKX"}
+		
+		
 	];
 	knownCheck = [
 		"bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h",
@@ -339,7 +345,11 @@ window.onload = function(){
 		"1JZAzU9bknNPoSL6PXUZfs2o367FcTEgoC",
 		"1EwyRYQrYbYGTVVHLQX44vrzagbHHMGYkn",
 		"bc1qlqy2py5fryr64m7f6djv0sf8d5j7pchf70vzap",
-		"bc1qng0keqn7cq6p8qdt4rjnzdxrygnzq7nd0pju8q"
+		"bc1qng0keqn7cq6p8qdt4rjnzdxrygnzq7nd0pju8q",
+		"16Uz37Q6TfvK2UFTgamn3dyRjnP2Wtf4p2",
+		"bc1q8s3h3vw5xufdas890q29lpuca56r0ezqar0mvs",
+		"3PQstJuScWBgP1QAaxbCTpuzrYkG73dZi4",
+		"3JcWcMPtxGaCuhKeucTMe1V865t7UhrNnT"
 	];
 	
 	function checkList(checkOutputScript){
@@ -637,8 +647,6 @@ window.onload = function(){
 	s = new sigma({
 	  graph: g,
 	  settings: {
-		mouseEnabled: true,
-		touchEnabled: true,
 		enableHovering: true
 	  }
 	});
@@ -647,7 +655,7 @@ window.onload = function(){
 	  id: 'main',
 	  type: 'svg',
 	  container: document.getElementById('graph-container'),
-	  freeStyle: true
+	  freeStyle: false
 	});       
 
 	s.refresh();
