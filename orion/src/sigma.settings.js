@@ -31,7 +31,7 @@
     // {string}
     defaultNodeType: 'def',
     // {string}
-    defaultEdgeType: 'def',
+    defaultEdgeType: 'arrow',
     // {string}
     defaultLabelColor: '#000',
     // {string}
@@ -44,7 +44,7 @@
     //          "source", "target", "default"
     edgeColor: 'source',
     // {number} Defines the minimal edge's arrow display size.
-    minArrowSize: 0,
+    minArrowSize: 5,
     // {string}
     font: 'arial',
     // {string} Example: 'bold'
@@ -114,7 +114,7 @@
     batchEdgesDrawing: false,
     // {boolean} Indicates if the edges must be hidden during dragging and
     //           animations.
-    hideEdgesOnMove: false,
+    hideEdgesOnMove: true,
     // {numbers} The different batch sizes, when elements are displayed in
     //           several frames.
     canvasEdgesBatchSize: 500,
@@ -152,7 +152,7 @@
      * *****************
      */
     // {boolean}
-    touchEnabled: true,
+    touchEnabled: false,
     // {boolean}
     mouseEnabled: true,
     // {boolean}
@@ -209,7 +209,7 @@
     //           nothing.
     enableCamera: true,
     // {boolean} If set to false, the nodes cannot be hovered.
-    enableHovering: true,
+    enableHovering: false,
     // {boolean} If set to true, the edges can be hovered.
     enableEdgeHovering: false,
     // {number} The size of the area around the edges to activate hovering.

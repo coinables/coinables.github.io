@@ -647,7 +647,7 @@ window.onload = function(){
 	s = new sigma({
 	  graph: g,
 	  settings: {
-		enableHovering: true
+		enableHovering: false
 	  }
 	});
 
@@ -660,7 +660,7 @@ window.onload = function(){
 
 	s.refresh();
 
-	// Binding silly interactions
+	// Binding interactions
 	function mute(node) {
 	  if (!~node.getAttribute('class').search(/muted/))
 		node.setAttributeNS(null, 'class', node.getAttribute('class') + ' muted');
@@ -674,7 +674,9 @@ window.onload = function(){
 	$('.sigma-node').click(function() {
 	
 	
-		clickinput = $(this).attr('data-node-id');
+		clickinput = checkList($(this).attr('data-node-id'));
+		$("#search").val(clickinput);
+		nodeSearch();
 	
 
 	  // Muting
