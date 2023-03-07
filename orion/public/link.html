@@ -293,10 +293,20 @@ window.onload = function(){
 		{"address":"16Uz37Q6TfvK2UFTgamn3dyRjnP2Wtf4p2","label":"Cumberland Mining"},
 		{"address":"bc1q8s3h3vw5xufdas890q29lpuca56r0ezqar0mvs","label":"Cumberland Mining"},
 		{"address":"3PQstJuScWBgP1QAaxbCTpuzrYkG73dZi4","label":"BitFlyer"},
-		{"address":"3JcWcMPtxGaCuhKeucTMe1V865t7UhrNnT","label":"OKX"}
-		
-		
-	];
+		{"address":"3JcWcMPtxGaCuhKeucTMe1V865t7UhrNnT","label":"OKX"},
+		{"address":"3NeGJChsjbEn3j7PXXHXyXfqQKmyFyyxup","label":"Kucoin"},
+		{"address":"bc1qw8wrek2m7nlqldll66ajnwr9mh64syvkt67zlu","label":"Kraken"},
+		{"address":"16GnRigCNf6eEJJ8F1sT8ttzpS5RdS1gSS","label":"Binance"},
+		{"address":"1EKYhyU4hK7vt76J71Vow6QjX7R5gn4Rk8","label":"Binance"},
+		{"address":"1KE2ahPUPTCGyKSs2GUucoU8E4yoriKYsB","label":"Binance"},
+		{"address":"12bjYoRBE8MNsGjYBg6SfqvPtZSE85h9XK","label":"Binance"},
+		{"address":"bc1qspp5aahnp20mfvk4w3e774f5sgqzsqvcnd9k8f","label":"Binance"},
+		{"address":"14VKrFTjDTAUcGb6fz58tbPdCLS7uiTsxm","label":"Uphold"},
+		{"address":"16EFGkAsqgH8nbU8TJKNV8gSNSrgBSe5Nw","label":"Uphold"},
+		{"address":"3JodN7GmkHdPgKj9G7HCkn9NDLhrcWCjVN","label":"Coinspaid"},
+		{"address":"1Ez2PGrQgkrGnCiJyWSQ56GdsYRWcEqegr","label":"ByBit"}
+		];
+	
 	knownCheck = [
 		"bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h",
 		"325gSHHe7UGvzEc9kGx43VqPboXUVwa26i",
@@ -349,7 +359,18 @@ window.onload = function(){
 		"16Uz37Q6TfvK2UFTgamn3dyRjnP2Wtf4p2",
 		"bc1q8s3h3vw5xufdas890q29lpuca56r0ezqar0mvs",
 		"3PQstJuScWBgP1QAaxbCTpuzrYkG73dZi4",
-		"3JcWcMPtxGaCuhKeucTMe1V865t7UhrNnT"
+		"3JcWcMPtxGaCuhKeucTMe1V865t7UhrNnT",
+		"3NeGJChsjbEn3j7PXXHXyXfqQKmyFyyxup",
+		"bc1qw8wrek2m7nlqldll66ajnwr9mh64syvkt67zlu",
+		"16GnRigCNf6eEJJ8F1sT8ttzpS5RdS1gSS",
+		"1EKYhyU4hK7vt76J71Vow6QjX7R5gn4Rk8",
+		"1KE2ahPUPTCGyKSs2GUucoU8E4yoriKYsB",
+		"12bjYoRBE8MNsGjYBg6SfqvPtZSE85h9XK",
+		"bc1qspp5aahnp20mfvk4w3e774f5sgqzsqvcnd9k8f",
+		"14VKrFTjDTAUcGb6fz58tbPdCLS7uiTsxm",
+		"16EFGkAsqgH8nbU8TJKNV8gSNSrgBSe5Nw",
+		"3JodN7GmkHdPgKj9G7HCkn9NDLhrcWCjVN",
+		"1Ez2PGrQgkrGnCiJyWSQ56GdsYRWcEqegr"
 	];
 	
 	function checkList(checkOutputScript){
@@ -374,39 +395,21 @@ window.onload = function(){
 		//default tx to load if random recent tx ajax query fails
 		var param = "0f58c9a7aee48bd72ffd929fd3ac80bf95db5be13a6493b2f954de9ae659710d";
 		
-		//fetch the blockheight tip
+		var randomKnownIndex = Math.random() * knownCheck.length;
+		randomKnownIndex = Math.floor(randomKnownIndex);
+		var randomKnown = knownCheck[randomKnownIndex];
+		
+		//fetch transactions from random known address
 		$.ajax({
 			async: false,
 			type: "GET",
-			url: "https://mempool.space/api/blocks/tip/height",
-			success: function(latestblockheight) {
-				//use blockheight tip to calc 10 blocks ago
-				var tenblocksago = latestblockheight-10;
+			url: "https://mempool.space/api/address/"+randomKnown+"/txs",
+			success: function(addrtxs) {
+				//pick a random transaction to visualize
+				var randomPick = Math.random() * addrtxs.length;
+				randomPick = Math.floor(randomPick);
 				
-				$.ajax({
-					async: false,
-					type: "GET",
-					url: "https://mempool.space/api/block-height/"+tenblocksago,
-					success: function(latestblockhash){
-						
-						
-							$.ajax({
-								async: false,
-								type: "GET",
-								url: "https://mempool.space/api/block/"+latestblockhash+"/txids",
-								success: function(latesttxs) {
-									//pick a random transaction to visualize
-									let numtxs = latesttxs.length-1;
-									let randomtx = Math.random() * numtxs;
-									randomtx = Math.floor(randomtx); 
-									param = latesttxs[randomtx];
-								}
-							})
-						
-						
-					}
-				})
-				
+				param = addrtxs[randomPick].txid;
 				
 			}
 		});	
