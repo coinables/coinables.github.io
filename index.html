@@ -10,9 +10,13 @@ html,body{
 </head>
 <body>
 <h1>COINABLES.GITHUB.IO</h1>
+<h2>Welcome to my Open Source and fund raising page!</h2>
+<p>Please support my work and future works: 3DevXQGCEk7934Ac7P1pPbBAc3Ay2uDueA &nbsp;&nbsp;<span onclick="return showqr();" title="click to reveal QR Code"><b style="font-size: 26px;" >&#9860;</b>[qrcode]</span></p>
 <h2>This site is a collection of some open source client-side bitcoin web apps I have built.</h2>
 <p>Feel free to fork any of these projects.</p>
+
 <ul>
+	<li><a href="https://orion.ninja">Orion.Ninja</a> - Bitcoin transaction visualizer.</li>
 	<li><a href="https://segwitaddress.org">SegwitAddress.org</a> - Segwit paper wallet app.</li>
 	<li><a href="https://coinables.github.io/fastwallet">FastWallet</a> - A serverless HD bitcoin web wallet I built for casual/throwaway use cases.</li>
 	<li><a href="https://coinables.github.io/explorer">Explorer</a> - Simple bitcoin block explorer.</li>
@@ -29,7 +33,13 @@ html,body{
     <li><a href="https://coinables.github.io/mnemonic-recovery">Mnemonic Recovery</a> - A tool to brute force one missing word from a 12-word menmonic phrase.</li>
     <!-- NO LONGER WORKS AFTER API LIMIT CHANGE <li><a href="https://coinables.github.io/mnemonic-slots">Mnemonic Slots</a> - A practical joke page oalong the lines of DirectoryIO but think of a slot machine combined with BIP39 mnemonic words instead of cherries.</li> -->
 </ul>
-
+<h3>Other Works:</h3>
+<ul>
+<li>Wrote API Tutorial Articles in 2015 for Blockchain.info blog.</li>
+<li>Developed & Launched one of the first Lightning Explorers in 2018, recognized by Jameson Lopp (https://twitter.com/lopp/status/963440343063543808?s=20)</li>
+<li>Published over 100 bitcoin programming tutorials on my YT channel (https://www.youtube.com/@coinables/videos)</li>
+<li>Contributor to Bitcoin Core v0.15</li>
+</ul>
 <br>    
 <h3>Warning!</h3>
  
@@ -38,9 +48,9 @@ html,body{
 <p><strong>Use At Your Own Risk:</strong><br> Every app on this page is for educational purposes only. There are no guarantees. </p>
 
 <div style="position: fixed; top: 10px; right: 15px; z-index: 3;"><div id="qrdisplay" style="display: none;"></div></div>
-<p>Donations: 3LNWypeyjZ7nBgL3BVP4tAMvLiabWqEpAA &nbsp;&nbsp;<span onclick="return showqr();" title="click to reveal QR Code"><b style="font-size: 26px;" >&#9860;</b>[qrcode]</span></p>
+
 <script>
-new QRCode(document.getElementById("qrdisplay"),"3LNWypeyjZ7nBgL3BVP4tAMvLiabWqEpAA");
+new QRCode(document.getElementById("qrdisplay"),"3DevXQGCEk7934Ac7P1pPbBAc3Ay2uDueA");
 var toggle = 0;
 function showqr(){
 	if(toggle===0){
