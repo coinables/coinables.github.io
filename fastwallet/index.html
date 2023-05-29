@@ -148,7 +148,7 @@ body, html {
   <h4 class="card-title">Free. <em>Fast.</em> No Sign Up. Open Source.</h4>
   <div class="card border-primary mb-3" style="max-width: 100rem;"><div class="card-body">
   <p><b>Be aware this is a serverless web wallet with your private keys stored in the browser! YIKES! You probably shouldn't use this wallet for significant sums.<br>
-  This wallet uses public APIs like Blockchain and Blockchair for UTXO data and they probably track your IP! Use VPN/TOR etc.<br>
+  This wallet uses public APIs like Blockchain and Mempool.Space for UTXO data and they probably track your IP! Use a VPN.<br>
   Your keys are ONLY stored on YOUR device's temporary internet files. If you don't save your back-up mnemonic and you clear your browser cache you will lose access to your funds permanently.
   <br>FastWallet is just code that runs on your machine, it doesn't know anything about your keys, recovery or addresses, etc.</b></div></div> 
   FastWallet is a serverless bitcoin web wallet I built for casual/throwaway use cases. The wallet is limited to only 21 addresses, when you use up all 21 addresses just start a new wallet, although you are not prevented from re-using addresses if you wish(not recommended). The 21 address limit is to prevent a bloated wallet with too many addresses that will exceed free API usage limits, and to avoid any look-ahead gap issues if you attempt to recover on another device that support BIP84 deterministic wallets.<br><br>
@@ -218,7 +218,7 @@ $.ajax({
 		
 		if(addrbalance > 0){
 			recdarr.push(result.addresses[i].address);
-			 $("#addr_container").append('<div class="addrEach" id="'+result.addresses[i].address+'"><span class="addr">'+result.addresses[i].address+'</span><br>'+addrbalance+' SATS</div>');
+			 $("#addr_container").append('<div class="addrEach" id="'+result.addresses[i].address+'" alt="'+addrbalance+'"><span class="addr">'+result.addresses[i].address+'</span><br>'+addrbalance+' SATS</div>');
 		}
 	 }
 	 
@@ -231,30 +231,32 @@ $.ajax({
 			var loopaddress = this.id;
 			this.style.backgroundColor = "#ffc107";
 			
+			  var addrbal = this.getAttribute('alt');
 			  var data
+			  
 			  $.ajax({
 				async: true,
 				type: "GET",
-				url: "https://api.blockchair.com/bitcoin/dashboards/address/"+loopaddress,
+				url: "https://mempool.space/api/address/"+loopaddress+"/utxo",
 				success: function(res) {
 				 //console.log(res.data);
-				 console.log(res.data[loopaddress].utxo.length + " utxos found");
-				 var addrbal = res.data[loopaddress].address.balance;
-				 $("#utxocount").val(res.data[loopaddress].utxo.length);
+				 console.log(res.length + " utxos found");
+				 
+				 $("#utxocount").val(res.length);
 				 //default fee 6 sats per byte
 				 var spb = $("#spb").val();
 				 var basebytes = 124;
-				 var inputbytes = res.data[loopaddress].utxo.length * 68;
+				 var inputbytes = res.length * 68;
 				 var calctotalbytes = (inputbytes + basebytes);
 				 var calctotalfee = calctotalbytes * spb;
 				 $("#minerfee").val(calctotalfee);
 				 $("#addrbal").val(addrbal);
 				 $("#addrsel").val(loopaddress);
 				 $("#outamtinput").val(addrbal-calctotalfee);
-				 data = res.data[loopaddress].utxo.map(function(item){
+				 data = res.map(function(item){
 					return {
-					  "txid": item.transaction_hash,
-					  "vout": item.index,
+					  "txid": item.txid,
+					  "vout": item.vout,
 					  "satoshis": item.value
 					}
 				  })
@@ -412,12 +414,15 @@ function sendtx(){
 				$.ajax({
 					async: true,
 					type: "POST",
-					url: "https://api.blockchair.com/bitcoin/push/transaction",
+					url: "https://mempool.space/api/tx",
 					contentType: 'application/json',
 					dataType: "json",
-					data: JSON.stringify({data: txhex}),
+					data: txhex,
 					success: function(result) {
-					  $("#hexout").html('Transaction ID: <a href="https://coinables.github.io/explorer/tx/?q='+txid+'">'+txid+'</a>');
+					  $("#hexout").html('Transaction ID: <a href="https://mempool.space/tx/'+txid+'">'+txid+'</a>');
+					},
+					error: function(err) {
+						$("#hexout").html('Broadcast failed. You can broadcast the raw signed hex transaction manually.<br><div style="background-color: #30115e; border-radius: 5px; padding: 7px; text-align: left;">'+txhex+'</div>');
 					}
 				  });
 				
