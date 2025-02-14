@@ -2,150 +2,20 @@
 <html>
 <head>
 <title>ORION TX VISUALIZER</title>
-<script src="../src/sigma.core.js"></script>
-<script src="../src/conrad.js"></script>
-<script src="../src/utils/sigma.utils.js"></script>
-<script src="../src/utils/sigma.polyfills.js"></script>
-<script src="../src/sigma.settings.js"></script>
-<script src="../src/classes/sigma.classes.dispatcher.js"></script>
-<script src="../src/classes/sigma.classes.configurable.js"></script>
-<script src="../src/classes/sigma.classes.graph.js"></script>
-<script src="../src/classes/sigma.classes.camera.js"></script>
-<script src="../src/classes/sigma.classes.quad.js"></script>
-<script src="../src/classes/sigma.classes.edgequad.js"></script>
-<script src="../src/captors/sigma.captors.mouse.js"></script>
-<script src="../src/captors/sigma.captors.touch.js"></script>
-<script src="../src/renderers/sigma.renderers.canvas.js"></script>
-<script src="../src/renderers/sigma.renderers.webgl.js"></script>
-<script src="../src/renderers/sigma.renderers.svg.js"></script>
-<script src="../src/renderers/sigma.renderers.def.js"></script>
-<script src="../src/renderers/webgl/sigma.webgl.nodes.def.js"></script>
-<script src="../src/renderers/webgl/sigma.webgl.nodes.fast.js"></script>
-<script src="../src/renderers/webgl/sigma.webgl.edges.def.js"></script>
-<script src="../src/renderers/webgl/sigma.webgl.edges.fast.js"></script>
-<script src="../src/renderers/webgl/sigma.webgl.edges.arrow.js"></script>
-<script src="../src/renderers/canvas/sigma.canvas.labels.def.js"></script>
-<script src="../src/renderers/canvas/sigma.canvas.hovers.def.js"></script>
-<script src="../src/renderers/canvas/sigma.canvas.nodes.def.js"></script>
-<script src="../src/renderers/canvas/sigma.canvas.edges.def.js"></script>
-<script src="../src/renderers/canvas/sigma.canvas.edges.curve.js"></script>
-<script src="../src/renderers/canvas/sigma.canvas.edges.arrow.js"></script>
-<script src="../src/renderers/canvas/sigma.canvas.edges.curvedArrow.js"></script>
-<script src="../src/renderers/canvas/sigma.canvas.edgehovers.def.js"></script>
-<script src="../src/renderers/canvas/sigma.canvas.edgehovers.curve.js"></script>
-<script src="../src/renderers/canvas/sigma.canvas.edgehovers.arrow.js"></script>
-<script src="../src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
-<script src="../src/renderers/canvas/sigma.canvas.extremities.def.js"></script>
-<script src="../src/renderers/svg/sigma.svg.utils.js"></script>
-<script src="../src/renderers/svg/sigma.svg.nodes.def.js"></script>
-<script src="../src/renderers/svg/sigma.svg.edges.def.js"></script>
-<script src="../src/renderers/svg/sigma.svg.edges.curve.js"></script>
-<script src="../src/renderers/svg/sigma.svg.labels.def.js"></script>
-<script src="../src/renderers/svg/sigma.svg.hovers.def.js"></script>
-<script src="../src/middlewares/sigma.middlewares.rescale.js"></script>
-<script src="../src/middlewares/sigma.middlewares.copy.js"></script>
-<script src="../src/misc/sigma.misc.animation.js"></script>
-<script src="../src/misc/sigma.misc.bindEvents.js"></script>
-<script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
-<script src="../src/misc/sigma.misc.drawHovers.js"></script>
-<script src="../plugins/sigma.plugins.neighborhoods/sigma.plugins.neighborhoods.js"></script>
-<script src="../plugins/sigma.plugins.dragNodes/sigma.plugins.dragNodes.js"></script>
-<script src="../plugins/sigma.layout.forceAtlas2/supervisor.js"></script>
-<script src="../plugins/sigma.layout.forceAtlas2/worker.js"></script>
+
 <script src="lib/jquery-2.1.1.min.js"></script>
+<script src="lib/qrcode.js"></script>
 <style>
     html,body{
         font-family: "Calibri", "Arial", "sans-serif";
 		background-color: #2e1f2e;
 		margin: 0px;
 		padding: 0px;
-		overflow: hidden;
 		height: 100%;
     }
-    #graph-container {
-      top: -50px;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 720px;
-      position: relative;
-      background-color: #2d1e2d;
-    }
-    .sigma-edge {
-      stroke: #57b6f2;
-    }
-    .sigma-node {
-      stroke: #14191C;
-      stroke-width: 2px;
-    }
-	.sigma-nodetx {
-      fill: #009988;
-      stroke: #14191C;
-      stroke-width: 2px;
-    }
-	.sigma-label{
-		fill: #f3f3f3;
+	div{
+		padding: 5px;
 	}
-    .sigma-node:hover {
-      fill: blue;
-    }
-    .muted {
-      fill-opacity: 0.1;
-      stroke-opacity: 0.1;
-	  stroke: #ccc;
-    }
-    .channels{
-        padding: 5px;
-        background-color: darkslateblue;
-        color: aliceblue;
-        border-radius: 8px;
-        border: 1px solid #000039;
-        margin: 3px;
-    }
-    .nodeAlias{
-        padding: 5px;
-        background-color: white;
-        color: #111111;
-        border-radius: 8px;
-        border: 1px solid #fff;
-        margin: 3px;
-    }
-	.my-face{
-    width: 70px;
-    height: 70px;
-    background: #1a0933;
-    border-radius: 50% 50%50% 4%;
-    transform: rotate(-46deg);
-}
-.alien-wrapper{
-    display: inline-block;
-    margin-bottom: 11px;
-	position: relative;
-	margin: auto;
-	margin-bottom: 10px;
-}
-.eye{
-    width: 20px;
-    height: 20px;
-    background-color: #57b6f2;
-    position: absolute;
-    top: 28px;
-    left: 8px;
-    border-top-left-radius: 100%;
-    border-bottom-right-radius: 100%;
-    transform: rotate(85deg);
-}
-.eye-2 {
-    width: 20px;
-    height: 20px;
-    background-color: #57b6f2;
-    position: absolute;
-    top: 28px;
-    border-top-left-radius: 100%;
-    border-bottom-right-radius: 100%;
-    transform: rotate(0deg);
-    right:8px;
-}
 	input{
 		background-color: #2d1e2d;
 		color: #f3f3f3;
@@ -190,6 +60,43 @@
 		background-color: #0e0f0e;
 		color: #fff;
 	}
+	.inum{
+		width: 40px;
+		display: inline-block;
+		margin: 0px;
+		border: 1px solid #000;
+	}
+	.iacct{
+		width: 1100px;
+		display: inline-block;
+		margin: 0px;
+		border: 1px solid #000;
+	}
+	.ivalue{
+		width: 220px;
+		display: inline-block;
+		margin: 0px;
+		border: 1px solid #000;
+	}
+	#addr-container{
+		padding: 10px;
+		color: #e3e3e3;
+	}
+	#addr-container a{
+		color: #d2d2e3;
+	}
+	#addr-container a:visited{
+		color: #d2d2e3;
+	}
+	#qrfloat{
+		display: none;
+		position: fixed;
+		right: 10px;
+		top: 90px;
+	}
+	#assochrd{
+		display: none;
+	}
   </style>
 </head>
 
@@ -199,45 +106,42 @@
             
         </div><br><em>ORION</em><br><span style="position:relative; top: -10px; font-size:16px;"><em>[TRANSACTION VISUALIZER]</em></span></center></div>
 <div id="container"> 
-<div id="graph-container"></div>  
+<div id="addr-container">
+<br><br>
+<h2>Address <span id="addrHdr" onmouseover="return showQR(this);" onmouseleave="return hideQR();"></span><span id="addrLbl"></span></h2>
+Balance:  <input type="text" id="balance"><br>
+Total Received:  <input type="text" id="totreceived"><br>
+Pending:  <input type="text" id="pending"><br>
+# of Transactions:  <input type="text" id="txsnum"><br><br>
+<span id="assochrd">Associations:</span>
+<div id="assocs"></div>
+<h2>Transactions</h2>
+<div id="txsContainer">
+
+</div>
+
+<input type="hidden" id="priceholder">
+<div id="qrfloat"></div>
+</div>  
 </div>
 
 <div id="searchOutput"></div>
-<div id="navbanner"><span style="color: #fff; font-size: 18px; cursor: pointer;" onclick="window.location.replace('../../');">ORION</span><div id="txbar"><input type="text" id="txQuery" placeholder="TRANSACTION ID" style="padding: 3px; font-size: 11px; width: 550px;"> <button onclick="explore();" style="padding: 4px; font-weight: bold; font-size: 9px; background-color: #0e0f0e; color: #AEE7F8; border: 1px solid #2e2f2e; cursor: pointer;">VIEW</button>&nbsp;<input type="text" placeholder="SEARCH/FILTER THIS VISUAL" style="padding: 3px; font-size: 9px; margin-left: 15px; width:200px;" onkeyup="return nodeSearch();" id="search">&nbsp; <button onclick="txMemoryAdd();" style="padding: 4px; font-weight: bold; font-size: 9px; background-color: #0e0f0e; color: #AEE7F8; border: 1px solid #2e2f2e; cursor: pointer;">M+</button>  <button onclick="txMemoryRemove();" style="padding: 4px; font-weight: bold; font-size: 9px; background-color: #0e0f0e; color: #AEE7F8; border: 1px solid #2e2f2e; cursor: pointer;">M-</button></div></div>
+<div id="navbanner"><span style="color: #fff; font-family: 'Courier New', 'Times New Roman', serif; font-size: 18px; cursor: pointer;" onclick="window.location.replace('../../');">ORION</span><div id="txbar"><input type="text" id="txQuery" placeholder="TRANSACTION ID" style="padding: 3px; font-size: 11px; width: 550px;"> <button onclick="explore();" style="padding: 4px; font-weight: bold; font-size: 9px; background-color: #0e0f0e; color: #AEE7F8; border: 1px solid #2e2f2e; cursor: pointer;">VIEW</button></div></div>
 
 <script>
 function explore(){
 	var txInput = $("#txQuery").val();
 	
-	var url = "../public/link.html?q="+txInput;
+	if(txInput.length==64){
+		//txid
+		var url = "../public/orion.html?q="+txInput;
+	} else {
+		//address
+		var url = "../public/address.html?q="+txInput;
+	}
+	
 	window.location.replace(url);
 }
-
-	console.log("start");
-	//check if memory exists
-	if(localStorage.OCHAN){
-		let getDup = localStorage.getItem("ODUP");
-		getDup = JSON.parse(getDup);
-		let getNodes = localStorage.getItem("ONODES");
-		getNodes  = JSON.parse(getNodes);
-		let getChan = localStorage.getItem("OCHAN");
-		getChan  = JSON.parse(getChan);
-		var duplicateCheck = [];
-		var nodesJSON = { "nodes" : []};
-		var channelsJSON = { "channels" : []};
-		duplicateCheck = getDup;
-		nodesJSON.nodes = getNodes;
-		channelsJSON.channels = getChan;
-		var colorChannel = "#990000";
-	} else {
-		//leave blank
-		var duplicateCheck = [];
-		var nodesJSON = { "nodes" : []};
-		var channelsJSON = { "channels" : []};
-		var colorChannel = "#000099";
-	}
-
-	
 
 window.onload = function(){
 
@@ -2111,7 +2015,7 @@ window.onload = function(){
 			var findindex = knownCheck.indexOf(checkOutputScript);
 			var thislabel = knownAddresses[findindex].label;
 		} else {
-			var thislabel = checkOutputScript;
+			var thislabel = "unknown";
 		}
 		return thislabel;
 	}
@@ -2125,378 +2029,145 @@ window.onload = function(){
 	if(searchParams.has('q')){
 		var param = searchParams.get('q');
 	} else {	
-		//default tx to load if random recent tx ajax query fails
-		var param = "0f58c9a7aee48bd72ffd929fd3ac80bf95db5be13a6493b2f954de9ae659710d";
+		//default addr to load if random recent tx ajax query fails
+		var param = "bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h";
 		
 		var randomKnownIndex = Math.random() * knownCheck.length;
 		randomKnownIndex = Math.floor(randomKnownIndex);
 		var randomKnown = knownCheck[randomKnownIndex];
 		
-		//fetch transactions from random known address
-		$.ajax({
-			async: false,
-			type: "GET",
-			url: "https://mempool.space/api/address/"+randomKnown+"/txs",
-			success: function(addrtxs) {
-				//pick a random transaction to visualize
-				var randomPick = Math.random() * addrtxs.length;
-				randomPick = Math.floor(randomPick);
-				
-				param = addrtxs[randomPick].txid;
-				
-			}
-		});	
+		param = randomKnown;
 		
 	}
 	
 	document.getElementById("txQuery").value = param;
-
-
+	document.getElementById("addrHdr").innerHTML = param;
+	document.getElementById("addrLbl").innerHTML = " ("+checkList(param)+")";
+	console.log("start");
 	
-	
-		
-	
-	var parentTx = param;
-	var txsmelt = parentTx;
-	if(duplicateCheck.includes(txsmelt)){
-	
-	} else {
-			duplicateCheck.push(txsmelt);
-			nodesJSON.nodes.push({"nodeid":txsmelt,"channelColor":colorChannel,"alias":parentTx,"sats":null})
-	}
-	
-
-	var urlGetTx = "https://mempool.space/api/tx/"+parentTx; 
-	var urlGetOutputSpends = "https://mempool.space/api/tx/"+parentTx+"/outspends";
+	var urlGetAddr = "https://mempool.space/api/address/"+param; 
+	var urlGetTxs = "https://mempool.space/api/address/"+param+"/txs";
 	
 	$.ajax({
 			async: false,
 			type: "GET",
-			url: urlGetTx,
+			url: urlGetTxs,
 			success: function(result) {
-				//console.log("first ajax success");
+				console.log("addr txs ajax success");
 				var txapi = result;
-					for(i=0;i<txapi.vin.length;i++){
-						if(duplicateCheck.includes(txapi.vin[i].prevout.scriptpubkey_address)){
-						
-						} else {
-							duplicateCheck.push(txapi.vin[i].prevout.scriptpubkey_address);
-							//check if address is a known address
-							let lookuplabel = checkList(txapi.vin[i].prevout.scriptpubkey_address)
-							nodesJSON.nodes.push({"nodeid":txapi.vin[i].prevout.scriptpubkey_address,"channelColor":colorChannel,"alias":lookuplabel,"sats":txapi.vin[i].prevout.value})
-						}
-						
-					}
-					for(ii=0;ii<txapi.vout.length;ii++){
-						if(duplicateCheck.includes(txapi.vout[ii].scriptpubkey_address)){
-						
-						} else {
-							duplicateCheck.push(txapi.vout[ii].scriptpubkey_address);
-							//check if address is a known address
-							let lookuplabel = checkList(txapi.vout[ii].scriptpubkey_address)
-							nodesJSON.nodes.push({"nodeid":txapi.vout[ii].scriptpubkey_address,"channelColor":colorChannel, "alias":lookuplabel,"sats":txapi.vout[ii].value})
-						}
-							
-					}
-					for(iii=0;iii<txapi.vin.length;iii++){
-						if(duplicateCheck.includes(txapi.vin[iii].txid)){
-						
-						} else {
-							duplicateCheck.push(txapi.vin[iii].txid);
-							nodesJSON.nodes.push({"nodeid":txapi.vin[iii].txid,"channelColor":colorChannel, "alias":txapi.vin[iii].txid,"sats":null})
-							channelsJSON.channels.push({"source":txapi.vin[iii].txid, "destination":txapi.vin[iii].prevout.scriptpubkey_address, "channelColor":colorChannel, "short_channel_id":"pparent"+txapi.vin[iii].txid+iii})
-						}
-						channelsJSON.channels.push({"source":txapi.vin[iii].prevout.scriptpubkey_address, "channelColor":colorChannel, "destination":txsmelt, "short_channel_id":txapi.vin[iii].txid+iii})
-					}
-					for(iiii=0;iiii<txapi.vout.length;iiii++){
-						channelsJSON.channels.push({"source":txsmelt, "channelColor":colorChannel, "destination":txapi.vout[iiii].scriptpubkey_address, "short_channel_id":parentTx+iiii})
-					}
-					
-				//console.log(nodesJSON);
-				}
-			})	
-	
-	$.ajax({
-		async: false,
-		type: "GET",
-		url: urlGetOutputSpends,
-		success: function(result) {
-			//console.log(result)
-			//console.log("second ajax success");
-			var txapiouts = result;
-					
-			for(i=0;i<txapiouts.length;i++){
 				
-				if(txapiouts[i].spent===false){
-					//do nothing
-				} else {
-					let spenttxid = txapiouts[i].txid;
-					
-					if(duplicateCheck.includes(spenttxid)){
-					
-					} else {
-						duplicateCheck.push(spenttxid)
-						nodesJSON.nodes.push({"nodeid":spenttxid,"channelColor":colorChannel, "alias":spenttxid,"sats":null})
+				var txslength = txapi.length;
+				
+				var catchlabels = [];
+				for(var i=0;i<txslength;i++){
+					var addrinputstr = "";
+					var addroutputstr = "";
+					var formattime = timeConverter(txapi[i].status.block_time);
+					for(var ii=0;ii<txapi[i].vout.length;ii++){
+						var loopaddr = txapi[i].vout[ii].scriptpubkey_address;
+						var wholebtcs = parseFloat(txapi[i].vout[ii].value/100000000);
+						addroutputstr += "<a href='address.html?q="+loopaddr+"'>"+loopaddr+"</a> <span style='margin-bottom: 7px; padding: 2px; background-color: #14A44D;'>"+wholebtcs+" BTC</span><br><br>";
+						if(checkList(loopaddr)==="unknown"){
+							
+						} else {
+							//turn on associations
+							document.getElementById("assochrd").style.display = "block";
+							if(catchlabels.includes(loopaddr)){
+								//
+							} else {
+								catchlabels.push(loopaddr);
+							}
+							
+						}
 					}
 					
-										
-					$.ajax({
-					async: false,
-					type: "GET",
-					url: "https://mempool.space/api/tx/"+spenttxid,
-					success: function(result) {
-						//console.log("third ajax success");
-						var txapispent = result;
-												
-						for(iii=0;iii<txapispent.vout.length;iii++){
-							if(duplicateCheck.includes(txapispent.vout[iii].scriptpubkey_address)){
+					for(var iii=0;iii<txapi[i].vin.length;iii++){
+						var loopinaddr = txapi[i].vin[iii].prevout.scriptpubkey_address;
+						var wholebtcval = parseFloat(txapi[i].vin[iii].prevout.value/100000000);
+						addrinputstr += "<a href='tx.html?q="+txapi[i].vin[iii].txid+"'>"+loopinaddr+"</a> <span style='margin-bottom: 7px; padding: 2px; background-color: #DC4C64;'>"+wholebtcval+" BTC</span><br><br>";
+						if(checkList(loopinaddr)==="unknown"){
 							
+						} else {
+							//turn on associations
+							document.getElementById("assochrd").style.display = "block";
+							if(catchlabels.includes(loopinaddr)){
+								//
 							} else {
-								duplicateCheck.push(txapispent.vout[iii].scriptpubkey_address);
-								let lookuplabel = checkList(txapispent.vout[iii].scriptpubkey_address)
-								nodesJSON.nodes.push({"nodeid":txapispent.vout[iii].scriptpubkey_address,"channelColor":colorChannel, "alias":lookuplabel,"sats":txapispent.vout[iii].value})
+								catchlabels.push(loopinaddr);
 							}
 							
 						}
 						
-						for(iiii=0;iiii<txapispent.vin.length;iiii++){
-							console.log(txapispent.vin[iiii].prevout.scriptpubkey_address);
-							if(duplicateCheck.includes(txapispent.vin[iiii].prevout.scriptpubkey_address)){
-							
-							} else {
-								duplicateCheck.push(txapispent.vin[iiii].prevout.scriptpubkey_address);
-								let lookuplabel = checkList(txapispent.vin[iiii].prevout.scriptpubkey_address)
-								nodesJSON.nodes.push({"nodeid":txapispent.vin[iiii].prevout.scriptpubkey_address,"channelColor":colorChannel, "alias":lookuplabel,"sats":txapispent.vin[iiii].prevout.value})
-							}
-							
-							channelsJSON.channels.push({"source":txapispent.vin[iiii].prevout.scriptpubkey_address, "destination":spenttxid, "channelColor":colorChannel, "short_channel_id":spenttxid+iiii})
-						}
-						
-						for(v=0;v<txapispent.vout.length;v++){
-							channelsJSON.channels.push({"source":spenttxid, "channelColor":colorChannel, "destination":txapispent.vout[v].scriptpubkey_address, "short_channel_id":spenttxid+v})
-						}
-						
 					}
-					});
-					
+					console.log(txapi[i].status.block_time);
+					$("#txsContainer").append('<br><br><div class="ivalue">'+formattime+'</div><br><div class="iacct"><table style="width: 1100px; font-size: 13px;"><tr><td align="left">'+addrinputstr+'</td><td align="right">'+addroutputstr+'</td></tr></table><a href="../public/tx.html?q='+txapi[i].txid+'">'+txapi[i].txid+'</a> - <a href="../public/orion.html?q='+txapi[i].txid+'">View &#8886; Chart</a></div><br>');
 				}
 				
 				
-								
-			}
-			
-		}
-	});	
-	
-	
-			
-	let nodesLength = nodesJSON.nodes.length;
-
-	h = {
-	  nodes: [],
-	  connections: []
-	}
-
-	for(var i=0;i<nodesLength;i++){
-		
-			h.nodes.push({
-				id: nodesJSON.nodes[i].nodeid,
-				label: nodesJSON.nodes[i].alias,
-				sats: nodesJSON.nodes[i].sats,
-				clr: nodesJSON.nodes[i].channelColor
+				
+				for(i=0;i<catchlabels.length;i++){
+					$("#assocs").append('<div class="iacct">'+checkList(catchlabels[i])+' - <a href="address.html?q='+catchlabels[i]+'">'+catchlabels[i]+'</a></div><br>');
+				}
+				
+				}
 			});
-	}
-
-	let innerNodes = h.nodes.length;
-
-	for(var i=0;i<innerNodes;i++){
-		let innerCounter = 0;
-		let channelsLength = channelsJSON.channels.length;
-
-		for(ii=0;ii<channelsLength;ii++){
-			if(channelsJSON.channels[ii].destination === h.nodes[i].id){
-				innerCounter++;
-			}
-		}
-		
-		h.connections.push(innerCounter);
-	}
-	 
-	var i,
-		s,
-		N = nodesJSON.nodes.length,
-		E = channelsJSON.channels.length,
-		g = {
-		  nodes: [],
-		  edges: []
-		};
-
-	for (i = 0; i < N; i++){
-		console.log(h.connections[i])
-		var nodeColor = ""
-		var nodeSize = ""
-		if(h.connections[i] > 2){
-			nodeColor = "#AEE7F8"
-				if(h.connections[i] > 12){ nodeColor = "#fff"}
-		} else {
-			nodeColor = h.nodes[i].clr
-		}
-		let loopsats = h.nodes[i].sats;
-		loopsats = loopsats/100000000;
-		loopsats = Math.floor(loopsats)
-		
-		if(loopsats > 1){
-			nodeSize = 20
-			//nodeSize = nodeSize > 5 ? 5 : nodeSize;
-		} else {
-			nodeSize = 9
-		}
-		var xcord = ""
-		if(h.nodes[i].clr=="#990000"){
-		    xcord = Math.random() *(25-13) + 13;
-		} else {
-			xcord = Math.random() *12
-		}
-		
-	  g.nodes.push({
-		id: h.nodes[i].id,
-		label: h.nodes[i].label,
-		x: xcord,
-		y: Math.random() *10,
-		size: nodeSize,
-		color: nodeColor
-	  });
-	 }
-
-	for (i = 0; i < E; i++)
-	  g.edges.push({
-		id: channelsJSON.channels[i].short_channel_id+i,
-		source: channelsJSON.channels[i].source,
-		target: channelsJSON.channels[i].destination,
-		size: Math.random(),
-		color: '#ccc'
-	  });
-	  
-	 
-
-	// Instantiate sigma:
-	s = new sigma({
-	  graph: g,
-	  settings: {
-		enableHovering: false
-	  }
-	});
-
-	s.addRenderer({
-	  id: 'main',
-	  type: 'svg',
-	  container: document.getElementById('graph-container'),
-	  freeStyle: false
-	});       
-
-	s.refresh();
-
-	// Binding interactions
-	function mute(node) {
-	  if (!~node.getAttribute('class').search(/muted/))
-		node.setAttributeNS(null, 'class', node.getAttribute('class') + ' muted');
-	}
-
-	function unmute(node) {
-	  node.setAttributeNS(null, 'class', node.getAttribute('class').replace(/(\s|^)muted(\s|$)/g, '$2'));
-	}
 	
-
-	$('.sigma-node').click(function() {
+		$.ajax({
+			async: false,
+			type: "GET",
+			url: urlGetAddr,
+			success: function(result) {
+				console.log("addr ajax success");
+				var addrapi = result;
+				var totalreceived = addrapi.chain_stats.funded_txo_sum;
+				var totalsent = addrapi.chain_stats.spent_txo_sum;
+				var totaltxs = addrapi.chain_stats.tx_count;
+				var pendingtxs = addrapi.mempool_stats.tx_count;
+				var pendingamt = addrapi.mempool_stats.funded_txo_sum;
+				var endingbalance = (totalreceived - totalsent)/100000000;
+				endingbalance = parseFloat(endingbalance).toFixed(8);
+				totalreceived = totalreceived/100000000;
+				totalreceived = parseFloat(totalreceived).toFixed(8);
+				//console.log(result);
+				document.getElementById("totreceived").value = totalreceived;
+				document.getElementById("pending").value = pendingamt;
+				document.getElementById("txsnum").value = totaltxs;
+				document.getElementById("balance").value = endingbalance;
+				}
+			});
 	
 	
-		clickinput = checkList($(this).attr('data-node-id'));
-		$("#search").val(clickinput);
-		nodeSearch();
-	
-
-	  // Muting
-	  $('.sigma-node, .sigma-edge').each(function() {
-		mute(this);
-	  });
-	  
-	  // Unmuting neighbors
-	  var neighbors = s.graph.neighborhood($(this).attr('data-node-id'));
-	  neighbors.nodes.forEach(function(node) {
-		unmute($('[data-node-id="' + node.id + '"]')[0]);
-	  });
-
-	  neighbors.edges.forEach(function(edge) {
-		unmute($('[data-edge-id="' + edge.id + '"]')[0]);
-	  });
-	});
-	
-	s.bind('clickStage', function() {
-	  $('.sigma-node, .sigma-edge').each(function() {
-		unmute(this);
-	  });
-	});
-			
-			
-} //end on window load				
-	
-function txMemoryAdd(){
-		console.log("memory add");
-		window.localStorage.setItem("ODUP", JSON.stringify(duplicateCheck));
-		window.localStorage.setItem("ONODES", JSON.stringify(nodesJSON.nodes)); 
-		window.localStorage.setItem("OCHAN", JSON.stringify(channelsJSON.channels));
-		alert("Saved to memory");
-	}
-	
-function txMemoryRemove(){
-	console.log("memory remove");
-	window.localStorage.removeItem("ODUP");
-	window.localStorage.removeItem("ONODES"); 
-	window.localStorage.removeItem("OCHAN");
-	alert("Memory cleared");
 }
-	
-function searchshow(innodeid){
-		
-	  var clickednodeid = innodeid;
-	  //console.log(clickednodeid);
-	  
-	 
-	 var selectednode = $('.sigma-node').filter('[data-node-id="'+clickednodeid+'"]');
-	 //console.dir(selectednode);
-	 selectednode.attr("fill","#069b11");
-	 selectednode.attr("r","16");
-	
-}			
-				
- function nodeSearch(){
-		document.getElementById("searchOutput").innerHTML = "";
-		var userInputText = document.getElementById("search").value;
-		 
-		var uitl = userInputText.length;
-		//if(uitl > 0){
-		   var uilwr = userInputText.toLowerCase();
-		   hn = h.nodes.length;
-			for(i=0;i<hn;i++){
-				if(h.nodes[i].label){
-				   var checkNSub = h.nodes[i].label.substring(0, uitl);
-					var checkNLwer = checkNSub.toLowerCase();
-					if(checkNLwer === uilwr){
-						let loopval = h.nodes[i].sats / 100000000
-						loopval = loopval.toFixed(8)
-						console.log(h.nodes[i].label+" "+h.connections[i]);
-						$("#searchOutput").append("<br><h4><span class='nodeAlias'>"+h.nodes[i].label+'</span><span class="channels">'+h.connections[i]+"</span><br><input type='text' id='"+i+"' value='"+h.nodes[i].id+"' onclick='return searchshow(this.value);' style='cursor: pointer; width: 250px;'><br><input type='text' id='"+i+"sats' value='"+loopval+" BTC' readonly></h4>");
-					}
-				} else {
-					//
-				} 
-			}   
-		//}
-		
-	 }
 
-
+function timeConverter(UNIX_timestamp){
+  var a = new Date(UNIX_timestamp * 1000);
+  if(isNaN(UNIX_timestamp)){
+	  var time = "unconfirmed";
+	  return time;
+  } else {
+	  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+	  var year = a.getFullYear();
+	  var month = months[a.getMonth()];
+	  var date = a.getDate();
+	  var hour = a.getHours();
+	  var min = a.getMinutes();
+	  var sec = a.getSeconds();
+	  var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+	  return time;
+  }
+  
+}
     
+function showQR(elemQR){
+	let elementValue = elemQR.innerHTML;
+	document.getElementById("qrfloat").style.display = "block";
+	document.getElementById("qrfloat").innerHTML = "";
+	new QRCode(document.getElementById("qrfloat"),elementValue);
+	
+}
+function hideQR(){
+	document.getElementById("qrfloat").style.display = "none";
+}
 </script>
 </body>
 </html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<title>Orion.Ninja</title>
+<style>
+html,body{
+  font-family: "Calibri", "Arial", "sans-serif";
+  background-color: #2e1f2e;
+  margin: 0px;
+  padding: 0px;
+  color: #f2f2f2;
+}
+</style>
+</head>
+<body>
+<center>
+<h1>Bitcoin Transaction Visualizer</h1>
+<br><br><br><br>
+<img src="public/logo.png"><br><br>
+<input type="text" id="txQuery" placeholder="ADDRESS/TRANSACTION ID" style="padding: 3px; font-size: 11px; width: 550px;"> <button onclick="explore();" style="padding: 4px; font-weight: bold; font-size: 9px; background-color: #0e0f0e; color: #AEE7F8; border: 1px solid #2e2f2e; cursor: pointer;">VIEW</button><br><br>
+<a href="orion/public/orion.html">
+<button style="padding: 12px; border: 2px solid #000; border-radius: 7px;">Random Transaction</button></a>
+<br>
+<a href="orion/public/link.html">
+<button style="padding: 12px; border: 2px solid #000; border-radius: 7px;">Compare/Link Transactions</button></a>
+</center>
+<script>
+function explore(){
+	var txInput = document.getElementById("txQuery").value;
+	
+	if(txInput.length==64){
+		//txid
+		var url = "public/orion.html?q="+txInput;
+	} else {
+		//address
+		var url = "public/address.html?q="+txInput;
+	}
+	
+	window.location.replace(url);
+}
+</script>
+</body>
+</html>

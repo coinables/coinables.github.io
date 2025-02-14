@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ORION TX VISUALIZER</title>
+<style>
+html, body{
+	font-family: "Courier New", "Times New Roman", serif;
+	background-color: #2e1f2e;
+	margin: 0px;
+	padding: 0px;
+	height: 100%;
+	color: #e3e3e3;
+}
+a {
+	color: #e3e3e3;
+}
+a:visited {
+	color: #e3e3e3;
+}
+#navbanner{
+		position: relative;
+		top: 0px;
+		display: block;
+		width: 100%;
+		padding: 7px;
+		background-color: #0e0f0e;
+		color: #fff;
+	}
+#txbar{
+		display: inline-block;
+		position: absolute; 
+		top: 5px;
+		left: 26%;
+	}
+	
+div{
+	padding: 5px;
+}
+.inum{
+	width: 40px;
+	display: inline-block;
+	margin: 0px;
+	border: 1px solid #000;
+}
+.iacct{
+	width: 620px;
+	display: inline-block;
+	margin: 0px;
+	border: 1px solid #000;
+}
+.ivalue{
+	width: 130px;
+	display: inline-block;
+	margin: 0px;
+	border: 1px solid #000;
+}
+.miner{
+	width: 672px;
+	display: inline-block;
+	margin: 0px;
+	border: 1px solid #000;
+}
+#qrfloat{
+		display: none;
+		position: fixed;
+		right: 10px;
+		top: 10px;
+}
+</style>
+
+<script src="lib/jquery-2.1.1.min.js"></script>
+<script src="lib/qrcode.js"></script>   
+</head>
+<body>
+<div id="navbanner"><span style="color: #fff; font-size: 18px; cursor: pointer;" onclick="window.location.replace('../../');">ORION</span><div id="txbar"><input type="text" id="addrQuery" placeholder="TRANSACTION ID/ADDRESS" style="padding: 3px; font-size: 11px; width: 550px;"> <button onclick="queryAddr();" style="padding: 4px; font-weight: bold; font-size: 9px; background-color: #0e0f0e; color: #AEE7F8; border: 1px solid #2e2f2e; cursor: pointer;">VIEW</button></div></div>
+
+<br><br>
+Transaction:  <input type="text" size="80" id="transaction"><br>
+Time:  <input type="text" id="time"><br>
+Block:  <input type="text" size="80" id="block"><br>
+<br>
+<span style="font-size: 20px;">Senders (inputs):</span><br>
+<div id="senderContainer">
+<div class="inum"><b>#</b></div><div class="iacct"><b>Sender</b></div><div class="ivalue"><b>Value (BTC)</b></div><div class="ivalue"><b>Value (USD)</b></div><br>
+</div>
+
+<br><br>
+<span style="font-size: 20px;">Recipients (outputs):</span><br>
+<div id="recContainer">
+<div class="inum"><b>#</b></div><div class="iacct"><b>Recipient</b></div><div class="ivalue"><b>Value (BTC)</b></div><div class="ivalue"><b>Value (USD)</b></div><br>
+</div>
+<input type="hidden" id="priceholder">
+<div id="qrfloat"></div>
+<script>
+function queryAddr(){
+	var addrInput = $("#addrQuery").val();
+	if(addrInput.length === 64){
+		//query txid instead of address
+		var sub = "orion";
+	} else {
+		var sub = "address";
+	}
+	var url = sub+".html?q="+addrInput;
+	window.location.replace(url);
+}
+
+window.onload = function(){
+	
+	
+	$.ajax({
+		async: false,
+		type: "GET",
+		url: "https://mempool.space/api/v1/prices",
+		success: function(out){
+			var priceUSD = out.USD;
+			$("#priceholder").val(priceUSD);
+		}
+		
+	});
+	
+	
+	let searchParams = new URLSearchParams(window.location.search);
+
+	if(searchParams.has('q')){
+		let param = searchParams.get('q');
+				
+		$.ajax({
+			async: false,
+			type: "GET",
+			url: "https://mempool.space/api/tx/"+param,
+			success: function(result) {
+				api = result;
+				console.log(result);
+				$("#transaction").val(api.txid);
+				$("#addrQuery").val(api.txid);
+				$("#block").val(api.status.block_hash);
+				var formattedTime = timeConverter(api.status.block_time);
+				$("#time").val(formattedTime);
+				//$("#confirmations").val(api.confirmations);
+				var countInputs = api.vin.length;
+				var countOutputs = api.vout.length;
+				var sumInputs = 0;
+				var sumInputsUSD = 0;
+				var sumOutputs = 0;
+				var sumOutputsUSD = 0;
+				
+				for(var i=0;i<countInputs;i++){
+					var getUSD = $("#priceholder").val();
+					var inVal = api.vin[i].prevout.value;
+					var getUSDFloat = parseFloat(getUSD);
+					var inValFloat = parseFloat(inVal)/100000000;
+					sumInputs += inValFloat;
+					var usdAmt = getUSDFloat * inValFloat; 
+					sumInputsUSD += usdAmt;
+					$("#senderContainer").append('<div class="inum">'+i+'</div><div class="iacct"><a href="address.html?q='+api.vin[i].prevout.scriptpubkey_address+'" onmouseover="return showQR(this);" onmouseleave="return hideQR();">'+api.vin[i].prevout.scriptpubkey_address+'</a></div><div class="ivalue">'+api.vin[i].prevout.value/100000000+'</div><div class="ivalue">$'+usdAmt.toFixed(2)+'</div><br>');
+				}
+				
+				for(var i=0;i<countOutputs;i++){
+				    var outsats = parseFloat(api.vout[i].value);
+					var wholebtcAmt = outsats/100000000;
+					var usdOutAmt = parseFloat($("#priceholder").val()) * wholebtcAmt;
+					sumOutputs += parseFloat(api.vout[i].value)/100000000;
+					sumOutputsUSD += usdOutAmt;
+					$("#recContainer").append('<div class="inum">'+i+'</div><div class="iacct"><a href="address.html?q='+api.vout[i].scriptpubkey_address+'" onmouseover="return showQR(this);" onmouseleave="return hideQR();">'+api.vout[i].scriptpubkey_address+'</a></div><div class="ivalue">'+api.vout[i].value/100000000+'</div><div class="ivalue">$'+usdOutAmt.toFixed(2)+'</div><br>');
+				}
+				var minerfee = sumInputs - sumOutputs;
+				var minerfeeUSD = sumInputsUSD - sumOutputsUSD;
+				$("#recContainer").append('<div class="miner"><b>Miners Fee</b></div><div class="ivalue">'+minerfee.toFixed(8)+'</div><div class="ivalue">$'+minerfeeUSD.toFixed(2)+'</div><br>');
+				
+			}
+		});	
+			
+	}
+}	
+
+function timeConverter(UNIX_timestamp){
+  var a = new Date(UNIX_timestamp * 1000);
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var year = a.getFullYear();
+  var month = months[a.getMonth()];
+  var date = a.getDate();
+  var hour = a.getHours();
+  var min = a.getMinutes();
+  var sec = a.getSeconds();
+  var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+  return time;
+}
+
+function showQR(elemQR){
+	let elementValue = elemQR.innerHTML;
+	document.getElementById("qrfloat").style.display = "block";
+	document.getElementById("qrfloat").innerHTML = "";
+	new QRCode(document.getElementById("qrfloat"),elementValue);
+	
+}
+
+function hideQR(){
+	document.getElementById("qrfloat").style.display = "none";
+}
+</script>
+</body>
+</html>
