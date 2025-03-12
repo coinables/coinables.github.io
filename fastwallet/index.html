@@ -82,6 +82,9 @@ body, html {
         <li class="nav-item">
           <a class="nav-link" href="#" id="sendlink" onclick="return showSend();">Send</a>
         </li>
+		<li class="nav-item">
+		  <a class="nav-link" href="#" id="historylink" onclick="return showHistory();">History</a>
+		</li>
         <li class="nav-item">
           <a class="nav-link" href="#" id="backuplink" onclick="return showBackUp();">Back-Up</a>
         </li>
@@ -143,7 +146,15 @@ body, html {
 	</div>
 <br>
   </div>
-  <br><br>
+  <br>
+  <div class="card border-primary mb-3" style="max-width: 100rem; display: none;" id="historyblock">
+	  <div class="card-body" style="text-align: center;">
+		<h4 class="card-title">Transaction History</h4>
+		<p class="card-text">Latest 10 transactions.</p>
+		<div id="txHistory"></div>
+	  </div>
+	</div>
+  <br>
   <div id="info">
   <h4 class="card-title">Free. <em>Fast.</em> No Sign Up. Open Source.</h4>
   <div class="card border-primary mb-3" style="max-width: 100rem;"><div class="card-body">
@@ -267,8 +278,70 @@ $.ajax({
 			  });
 		}
 				  
-	}
-	
+	}  
+	var transactions = result.txs;
+if (transactions.length === 0) {
+  $("#txHistory").html("No transactions yet.");
+} else {
+  // Sort transactions by time (descending)
+  transactions.sort(function(a, b) {
+    return b.time - a.time;
+  });
+
+  // Get the latest 10 transactions
+  var latestTxs = transactions.slice(0, 10);
+
+  // Create a Set of wallet addresses for efficient lookup
+  var walletAddresses = new Set(farr);
+
+  // Initialize the transaction table
+  $("#txHistory").html(
+    '<table class="table"><thead><tr><th>Date</th><th>Type</th><th>Amount (BTC)</th><th>Status</th><th>TxID</th></tr></thead><tbody id="txTableBody"></tbody></table>'
+  );
+
+  // Process each transaction
+  latestTxs.forEach(function(tx) {
+    // Calculate total input value from wallet addresses
+    var walletInputsSum = 0;
+    tx.inputs.forEach(function(input) {
+      if (walletAddresses.has(input.prev_out.addr)) {
+        walletInputsSum += input.prev_out.value;
+      }
+    });
+
+    // Calculate total output value to wallet addresses
+    var walletOutputsSum = 0;
+    tx.out.forEach(function(output) {
+      if (walletAddresses.has(output.addr)) {
+        walletOutputsSum += output.value;
+      }
+    });
+
+    // Net change for the wallet
+    var netChange = walletOutputsSum - walletInputsSum;
+
+    // Determine transaction type
+    var type = walletInputsSum > 0 ? "Sent" : "Received";
+
+    // Format amount in BTC
+    var amount = Math.abs(netChange) / 100000000;
+    amount = amount.toFixed(8);
+
+    // Format date from Unix timestamp
+    var date = new Date(tx.time * 1000).toLocaleString();
+
+    // Determine confirmation status
+    var status = tx.block_height ? "Confirmed" : "Unconfirmed";
+
+    // Transaction ID
+    var txid = tx.hash;
+
+    // Append row to the table
+    $("#txTableBody").append(
+      `<tr><td>${date}</td><td>${type}</td><td>${amount}</td><td>${status}</td><td><a href="https://mempool.space/tx/${txid}" target="_blank">${txid}</a></td></tr>`
+    );
+  });
+}
   }
   });
  });
@@ -415,8 +488,7 @@ function sendtx(){
 					async: true,
 					type: "POST",
 					url: "https://mempool.space/api/tx",
-					contentType: 'application/json',
-					dataType: "json",
+					contentType: 'text/plain',
 					data: txhex,
 					success: function(result) {
 					  $("#hexout").html('Transaction ID: <a href="https://mempool.space/tx/'+txid+'">'+txid+'</a>');
@@ -456,35 +528,47 @@ function newAddr(){
 	});
 }
 
-
-function showReceive(){
-	$("#backupblock").fadeOut(200, function(){
-		$("#sendblock").fadeOut(1);
-		$("#receiveblock").fadeIn(100);
-		$("#receivelink").addClass("active");
-		$("#backuplink").removeClass("active");
-		$("#sendlink").removeClass("active");
-	});
+function hideAllBlocks() {
+  $("#receiveblock").hide();
+  $("#sendblock").hide();
+  $("#backupblock").hide();
+  $("#historyblock").hide();
 }
 
-function showSend(){
-	$("#receiveblock").fadeOut(200, function(){
-		$("#backupblock").fadeOut(1);
-		$("#sendblock").fadeIn(100);
-		$("#sendlink").addClass("active");
-		$("#receivelink").removeClass("active");
-		$("#backuplink").removeClass("active");
-	});
+function showReceive() {
+  hideAllBlocks();
+  $("#receiveblock").fadeIn(100);
+  $("#receivelink").addClass("active");
+  $("#sendlink").removeClass("active");
+  $("#backuplink").removeClass("active");
+  $("#historylink").removeClass("active");
 }
 
-function showBackUp(){
-	$("#receiveblock").fadeOut(200, function(){
-	    $("#sendblock").fadeOut(1);
-		$("#backupblock").fadeIn(100);
-		$("#backuplink").addClass("active");
-		$("#receivelink").removeClass("active");
-		$("#sendlink").removeClass("active");
-	});
+function showSend() {
+  hideAllBlocks();
+  $("#sendblock").fadeIn(100);
+  $("#sendlink").addClass("active");
+  $("#receivelink").removeClass("active");
+  $("#backuplink").removeClass("active");
+  $("#historylink").removeClass("active");
+}
+
+function showBackUp() {
+  hideAllBlocks();
+  $("#backupblock").fadeIn(100);
+  $("#backuplink").addClass("active");
+  $("#receivelink").removeClass("active");
+  $("#sendlink").removeClass("active");
+  $("#historylink").removeClass("active");
+}
+
+function showHistory() {
+  hideAllBlocks();
+  $("#historyblock").fadeIn(100);
+  $("#historylink").addClass("active");
+  $("#receivelink").removeClass("active");
+  $("#sendlink").removeClass("active");
+  $("#backuplink").removeClass("active");
 }
 
 function showWords(){
