@@ -1,0 +1,372 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Bitcoin Puzzle Hunter</title>
+  <script src="hexwif.js"></script>
+  <script src="buidl.js"></script>
+  <script src="confetti.browser.min.js"></script>
+  <style>
+    body { font-family: 'Courier New', monospace; background: #000; color: #0f0; padding: 20px; text-align: center; }
+    h1 { margin-bottom: 10px; }
+    .controls { margin: 20px 0; }
+    button { padding: 10px 20px; font-size: 16px; background: #0a0; color: #000; border: none; border-radius: 6px; cursor: pointer; margin: 0 5px; }
+    button:disabled { background: #555; cursor: not-allowed; }
+    #monitor { margin-top: 20px; max-height: 300px; overflow-y: auto; background: #111; padding: 10px; border: 1px solid #0f0; border-radius: 8px; font-size: 0.9rem; }
+    .progress-container { margin: 20px auto; width: 600px; display: flex; justify-content: center; gap: 8px; }
+    .box { width: 40px; height: 40px; background: #222; border: 2px solid #0f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; transition: all 0.3s; }
+    .box.filled { background: #0f0; color: #000; box-shadow: 0 0 15px #0f0; }
+    .stats { margin-top: 15px; font-size: 1.1rem; color: #0af; }
+    #jackpot { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(45deg, #ff0, #f90, #f06); color: #000; padding: 30px; border-radius: 20px; font-size: 2rem; font-weight: bold; text-align: center; box-shadow: 0 0 50px #ff0; z-index: 9999; display: none; animation: jackpotPulse 1.5s infinite; border: 5px solid #fff; }
+    @keyframes jackpotPulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.1); } }
+    .hit { color: yellow !important; font-weight: bold; animation: flash 1s infinite; }
+    @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+	
+  </style>
+</head>
+<body>
+	<h1>1PWo3JeB9jrGwfHDNpdGK54CRas7fsVzXU</h1>
+  <p><em>Puzzle #71 Hunter</em></p>
+  <div class="controls">
+    <button id="startBtn">Start Search</button>
+    <button id="soundToggle">Sound: ON</button>
+  </div>
+
+  <div class="progress-container" id="progressBoxes"></div>
+
+  <div id="monitor"></div>
+
+  <div class="stats">
+    Current Streak: <span id="currentStreak">0</span> | 
+    Best Streak: <span id="bestStreak">0</span> | 
+    Keys Searched: <span id="totalSearches">0</span>
+	<br>
+	Best Hit: <span id="bestHit">0</span>
+  </div>
+
+  <div id="jackpot">
+    PARTIAL MATCH!<br>
+    <span id="jackpotAddr"></span><br>
+   
+  </div>
+
+  <script>
+    const monitor = document.getElementById("monitor");
+    const startBtn = document.getElementById("startBtn");
+    const soundToggle = document.getElementById("soundToggle");
+    const progressBoxes = document.getElementById("progressBoxes");
+    const currentStreakEl = document.getElementById("currentStreak");
+    const bestStreakEl = document.getElementById("bestStreak");
+	const totalSearchesEl = document.getElementById("totalSearches");
+	const bestHitEl = document.getElementById("bestHit");
+    const jackpot = document.getElementById("jackpot");
+    const jackpotAddr = document.getElementById("jackpotAddr");
+
+    let isRunning = false;
+    let soundEnabled = true;
+    let currentStreak = 0;
+	let bestMatch = parseInt(localStorage.getItem("bestMatch") || "0", 10);
+	let bestHit = localStorage.getItem("bestHit") ? localStorage.getItem("bestHit") : "0";
+	let bestKey = localStorage.getItem("bestKey") ? localStorage.getItem("bestKey") : "0";
+	let totalkeys = localStorage.getItem("totalKeys") ? localStorage.getItem("totalKeys") : "0";
+    let bestStreak = parseInt(localStorage.getItem("bestStreak") || "0", 10);
+	
+	window.onload = function(){
+		bestHitEl.innerHTML = bestHit+" 0x"+bestKey.slice(-18);
+		totalSearchesEl.innerHTML = numberWithCommas(totalkeys);
+	}
+
+    function initBoxes() {
+      progressBoxes.innerHTML = '';
+      for (let i = 0; i < 15; i++) {
+        const box = document.createElement('div');
+        box.className = 'box';
+        box.textContent = i + 1;
+        progressBoxes.appendChild(box);
+      }
+      currentStreak = 0;
+      updateStreak();
+    }
+
+    function fillBox(index) {
+      const boxes = progressBoxes.children;
+      if (index < boxes.length) {
+        boxes[index].classList.add('filled');
+        currentStreak = index + 1;
+        updateStreak();
+      }
+    }
+
+    function updateStreak() {
+      currentStreakEl.textContent = currentStreak;
+      if (currentStreak > bestStreak) {
+        bestStreak = currentStreak;
+        localStorage.setItem("bestStreak", bestStreak);
+        bestStreakEl.textContent = bestStreak;
+		bestHitEl.textContent = bestHit;
+      }
+    }
+
+    function celebrate() {
+      confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#ff0', '#f90', '#0f0'] });
+      setTimeout(() => {
+        confetti({ particleCount: 100, angle: 60, spread: 55, origin: { x: 0 } });
+        confetti({ particleCount: 100, angle: 120, spread: 55, origin: { x: 1 } });
+      }, 250);
+    }
+
+    function playJackpotSound() {
+      if (!soundEnabled) return;
+      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJIHM8tiJOQgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFKoHO8tiJOQgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJIHO8tiJOQgYaLvt559NEAxQp+PwtmMcBjiR1/LMeSwF');
+      audio.volume = 1;
+      audio.play().catch(() => {});
+    }
+
+    function showJackpot(address, pk) {
+      jackpotAddr.innerHTML = `<span style="color:#000;">${address}</span><br><small>WIF: ${pk.slice(0,20)}...</small>`;
+      jackpot.style.display = 'block';
+      celebrate();
+      playJackpotSound();
+
+      clearTimeout(window.jackpotTimer);
+      window.jackpotTimer = setTimeout(closeJackpot, 5000);
+    }
+
+    function closeJackpot() {
+      jackpot.style.display = 'none';
+      clearTimeout(window.jackpotTimer);
+    }
+
+    // === Search Logic ===
+    async function startHex() {
+      if (isRunning) return;
+      isRunning = true;
+      startBtn.disabled = true;
+      monitor.innerHTML = "<p style='color:cyan;'>Starting new search...</p>";
+      initBoxes();
+	  let totalkeys = localStorage.getItem("totalKeys") ? localStorage.getItem("totalKeys") : "0";
+
+      const prefix = "0000000000000000000000000000000000000000000000";
+      const batchSize = 100;
+      let i = 0;
+
+      while (i < 10000 && isRunning) {
+        for (let j = 0; j < batchSize && i < 10000; j++, i++) {
+          let rangestart = Math.ceil(4);
+		  let rangeend = Math.floor(7);
+		  const range = Math.floor(Math.random() * (rangeend - rangestart + 1)) + rangestart;
+		  const newtry = generateRandom18DigitHex();
+          const hexkey = prefix + range + newtry;
+
+          try {
+            const newhex = hexwif.hexwif(hexkey);
+            const pair = buidl.getDetails(newhex.pk);
+
+            if (pair.p2pkh.startsWith("1PW")) {
+              const line = `<p class="hit"><strong>HIT #${currentStreak + 1}:</strong> ${pair.p2pkh} - ${pair.pk}</p>`;
+              monitor.insertAdjacentHTML('beforeend', line);
+              monitor.scrollTop = monitor.scrollHeight;
+
+              fillBox(currentStreak);
+              showJackpot(pair.p2pkh, pair.pk);
+			  
+			  if(bestMatch<2){
+				const notif = `<p class="hit"><strong>NEW BEST: </strong> ${pair.p2pkh}</p>`;
+				  monitor.insertAdjacentHTML('beforeend', notif);
+				  monitor.scrollTop = monitor.scrollHeight;
+				bestMatch = 2;
+				localStorage.setItem("bestMatch",bestMatch);
+				localStorage.setItem("bestHit",pair.p2pkh);
+				localStorage.setItem("bestKey",hexkey);
+				bestHitEl.innerHTML = pair.p2pkh+" 0x"+hexkey.slice(-18);
+			  }
+            }
+
+			if (pair.p2pkh.startsWith("1PWo")){
+				const line = `<p class="hit"><strong>HIT #${currentStreak + 1}:</strong> ${pair.p2pkh} - ${pair.pk}</p>`;
+				  monitor.insertAdjacentHTML('beforeend', line);
+				  monitor.scrollTop = monitor.scrollHeight;
+
+				  fillBox(currentStreak);
+				  showJackpot(pair.p2pkh, pair.pk);
+				
+				if(bestMatch<3){
+					const notif = `<p class="hit"><strong>NEW BEST: </strong> ${pair.p2pkh}</p>`;
+				  monitor.insertAdjacentHTML('beforeend', notif);
+				  monitor.scrollTop = monitor.scrollHeight;
+					bestMatch = 3;
+					localStorage.setItem("bestMatch",bestMatch);
+					localStorage.setItem("bestHit",pair.p2pkh);
+					localStorage.setItem("bestKey",hexkey);
+					bestHitEl.innerHTML = pair.p2pkh+" 0x"+hexkey.slice(-18);
+			  }
+			}
+			
+			if (pair.p2pkh.startsWith("1PWo3")){
+				const line = `<p class="hit"><strong>HIT #${currentStreak + 1}:</strong> ${pair.p2pkh} - ${pair.pk}</p>`;
+				  monitor.insertAdjacentHTML('beforeend', line);
+				  monitor.scrollTop = monitor.scrollHeight;
+
+				  fillBox(currentStreak);
+				  showJackpot(pair.p2pkh, pair.pk);
+				
+				if(bestMatch<4){
+					const notif = `<p class="hit"><strong>NEW BEST: </strong> ${pair.p2pkh}</p>`;
+				  monitor.insertAdjacentHTML('beforeend', notif);
+				  monitor.scrollTop = monitor.scrollHeight;
+					bestMatch = 4;
+					localStorage.setItem("bestMatch",bestMatch);
+					localStorage.setItem("bestHit",pair.p2pkh);
+					localStorage.setItem("bestKey",hexkey);
+					bestHitEl.innerHTML = pair.p2pkh+" 0x"+hexkey.slice(-18);
+			  }
+			}
+			
+			if (pair.p2pkh.startsWith("1PWo3J")){
+				const line = `<p class="hit"><strong>HIT #${currentStreak + 1}:</strong> ${pair.p2pkh} - ${pair.pk}</p>`;
+				  monitor.insertAdjacentHTML('beforeend', line);
+				  monitor.scrollTop = monitor.scrollHeight;
+
+				  fillBox(currentStreak);
+				  showJackpot(pair.p2pkh, pair.pk);
+				
+				if(bestMatch<5){
+					const notif = `<p class="hit"><strong>NEW BEST: </strong> ${pair.p2pkh}</p>`;
+				  monitor.insertAdjacentHTML('beforeend', notif);
+				  monitor.scrollTop = monitor.scrollHeight;
+					bestMatch = 5;
+					localStorage.setItem("bestMatch",bestMatch);
+					localStorage.setItem("bestHit",pair.p2pkh);
+					localStorage.setItem("bestKey",hexkey);
+					bestHitEl.innerHTML = pair.p2pkh+" 0x"+hexkey.slice(-18);
+			  }
+			}
+			
+			if (pair.p2pkh.startsWith("1PWo3Je")){
+				const line = `<p class="hit"><strong>HIT #${currentStreak + 1}:</strong> ${pair.p2pkh} - ${pair.pk}</p>`;
+				  monitor.insertAdjacentHTML('beforeend', line);
+				  monitor.scrollTop = monitor.scrollHeight;
+
+				  fillBox(currentStreak);
+				  showJackpot(pair.p2pkh, pair.pk);
+				
+				if(bestMatch<6){
+					const notif = `<p class="hit"><strong>NEW BEST: </strong> ${pair.p2pkh}</p>`;
+				  monitor.insertAdjacentHTML('beforeend', notif);
+				  monitor.scrollTop = monitor.scrollHeight;
+					bestMatch = 6;
+					localStorage.setItem("bestMatch",bestMatch);
+					localStorage.setItem("bestHit",pair.p2pkh);
+					localStorage.setItem("bestKey",hexkey);
+					bestHitEl.innerHTML = pair.p2pkh+" 0x"+hexkey.slice(-18);
+			  }
+			}
+
+            if (i % 1000 === 0 && i > 0) {
+              const prog = `<p>${i} keys checked | Last: ${hexkey}</p>`;
+              monitor.insertAdjacentHTML('beforeend', prog);
+              monitor.scrollTop = monitor.scrollHeight;
+            }
+          } catch (e) {
+            console.error("Error:", e);
+          }
+        }
+        await new Promise(requestAnimationFrame);
+      }
+
+      const finalMsg = isRunning 
+        ? `<p style="color:cyan;">Search complete: ${i} keys checked.</p>`
+        : `<p style="color:red;">Stopped at ${i} keys.</p>`;
+      monitor.insertAdjacentHTML('beforeend', finalMsg);
+	  let newKeysTotal = parseInt(totalkeys) + 10000;
+	  localStorage.setItem("totalKeys",newKeysTotal);
+	  totalSearchesEl.innerHTML = numberWithCommas(newKeysTotal);
+      startBtn.disabled = false;
+      isRunning = false;
+    }
+
+    function generateRandom18DigitHex() {
+      return Array.from({length: 17}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+    }
+	
+	function numberWithCommas(x) {
+		return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	}
+
+    // === Controls ===
+    startBtn.addEventListener('click', startHex);
+    soundToggle.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundToggle.textContent = `Sound: ${soundEnabled ? 'ON' : 'OFF'}`;
+      soundToggle.style.background = soundEnabled ? '#0f0' : '#f00';
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && isRunning) {
+       isRunning = false;
+        monitor.insertAdjacentHTML('beforeend', '<p style="color:red;">Stopped by user.</p>');
+      }
+    });
+
+    // Init
+    bestStreakEl.textContent = bestStreak;
+	bestHitEl.textContent = bestHit;
+    initBoxes();
+  </script>
+ <div style="margin: 60px auto; max-width: 900px; padding: 30px; background: #001100; border: 3px solid #0f0; border-radius: 12px; box-shadow: 0 0 30px #0f0;">
+    <h2 style="margin:0 0 20px 0; font-size:2.2rem; text-shadow: 0 0 10px #0f0;">
+      Puzzle #71 Jackpot
+    </h2>
+    <div style="display:flex; justify-content:center; align-items:center; gap:40px; flex-wrap:wrap; font-size:1.8rem;">
+      <div style="text-align:center;">
+        <div style="font-size:4rem; font-weight:bold; color:#0f0; text-shadow:0 0 20px #0f0;" id="btcAmount">7.10020628</div>
+        <div style="color:#0af;">BTC</div>
+      </div>
+      <div style="font-size:3rem; color:#ff0; opacity:0.9;">≈</div>
+      <div style="text-align:center;">
+        <div style="font-size:4rem; font-weight:bold; color:#ff0; text-shadow:0 0 20px #ff0;" id="usdAmount"></div>
+        <div style="color:#0af;">USD</div>
+      </div>
+    </div>
+    <div style="margin-top:20px; font-size:1.1rem; opacity:0.8;">
+      Address: <code style="background:#000; padding:2px 6px; border-radius:4px;">1PWo3JeB9jrGwfHDNpdGK54CRas7fsVzXU</code>
+    </div>
+  </div>
+
+  <div style="margin: 60px auto; max-width: 900px; padding: 30px; background: #001100; border: 2px solid #0f0; border-radius: 12px; line-height:1.7; font-size:1.05rem;">
+    <h2 style="text-align:center; margin-bottom:25px; text-shadow:0 0 10px #0f0;">The Legend of the Bitcoin Puzzles</h2>
+    <p>In December 2015, an anonymous member of the community known only as <strong>saatoshi_rising</strong> created one of the greatest cryptographic treasure hunts in history.</p>
+    <p>160 Bitcoin addresses were funded — each containing more BTC than the last — with private keys generated from a deterministic wallet and then <strong>masked with leading zeros</strong> to set increasing difficulty.</p>
+    
+    <p>The creator vanished after posting (<a href="https://bitcointalk.org/index.php?topic=1306983.msg18765941#msg18765941">Link</a>):</p>
+    <blockquote style="background:#000; padding:15px; border-left:4px solid #0f0; margin:20px 0; font-style:italic;">
+      "There is no pattern. Just consecutive keys from a deterministic wallet, masked with leading zeros to set difficulty."
+    </blockquote>
+	<p>Puzzle 71: The private key to 1PWo3JeB9jrGwfHDNpdGK54CRas7fsVzXU is somewhere between 0x400000000000000000 and 0x7fffffffffffffffff.</p>
+    <p style="text-align:center; font-size:1.3rem; margin-top:30px; color:#0f0; text-shadow:0 0 10px #0f0;">
+      This is not gambling.<br>
+    </p>
+	<br><br>
+	<span style="font-size: 11px; color: #ddd;">Enjoy this tool? TIP ME: 3DevXQGCEk7934Ac7P1pPbBAc3Ay2uDueA
+		</span>
+  </div>
+
+  <script>
+    var ws = new WebSocket("wss://api-pub.bitfinex.com/ws/2");
+	ws.onopen = function(){
+	  ws.send(JSON.stringify({"event":"subscribe", "channel":"ticker", "pair":"BTCUSD"}))
+	};
+	ws.onmessage = function(msg){
+	  var response = JSON.parse(msg.data);
+	  var hb = response[1];
+	  if(hb !== "hb"){
+		storelast = 7.10020628;
+		var pricenow = response[1][0];
+		let jackpotvalue = pricenow * storelast;
+		jackpotvalue = jackpotvalue.toFixed(2);
+		document.getElementById("usdAmount").innerHTML = numberWithCommas(jackpotvalue);
+		}
+	}	
+  </script>
+ </body>
+</html>
