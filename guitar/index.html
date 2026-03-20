@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Guitar Neck Note Quiz — Levels & High Scores</title>
+<style>
+  :root{
+    --fret-width: 56px;
+    --fret-height: 36px;
+    --strings: 6;
+    --frets: 23; /* 0..22 */
+    --neck-bg: #f6f0e6;
+    --fret-color: #d9cbb7;
+    --string-color: #444;
+    --marker-color: #222;
+    --highlight: #ffeb3b;
+    --correct: #4caf50;
+    --wrong: #f44336;
+    --panel-bg: #fff;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+
+  /* Page layout */
+  body{
+    margin: 18px;
+    background: linear-gradient(180deg,#eef2f7 0%, #f8fbff 100%);
+    color:#111;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+
+  h1{
+    margin:0 0 8px 0;
+    font-size:20px;
+  }
+
+  .topbar{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    margin-bottom:12px;
+  }
+
+  .panel{
+    background:var(--panel-bg);
+    border-radius:10px;
+    padding:12px;
+    box-shadow:0 6px 18px rgba(20,30,60,0.06);
+  }
+
+  .controls{
+    display:flex;
+    gap:12px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  .score{
+    font-weight:700;
+    font-size:18px;
+  }
+
+  .small{
+    font-size:13px;
+    color:#444;
+  }
+
+  .neck-wrap{
+    overflow:auto;
+    margin-top:14px;
+    padding:10px;
+    background:linear-gradient(180deg, rgba(0,0,0,0.02), transparent);
+    border-radius:10px;
+  }
+
+  .neck{
+    display:grid;
+    grid-auto-flow:column;
+    grid-auto-columns: var(--fret-width);
+    gap:0;
+    background:var(--neck-bg);
+    border-radius:8px;
+    padding:8px;
+    align-items:center;
+  }
+
+  .fret{
+    min-width:var(--fret-width);
+    border-right:2px solid rgba(0,0,0,0.06);
+    background:linear-gradient(180deg,var(--fret-color), #e6d9c2);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    padding:6px 4px;
+    box-sizing:border-box;
+  }
+
+  .fret-number{
+    font-size:12px;
+    color:#333;
+    height:14px;
+  }
+
+  .strings{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    width:100%;
+  }
+
+  .string-row{
+    display:flex;
+    gap:6px;
+    align-items:center;
+    width:100%;
+  }
+
+  .string-slot{
+    flex:1;
+    height:var(--fret-height);
+    border-radius:6px;
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:visible;
+  }
+
+  .string-line{
+    position:absolute;
+    left:6px;
+    right:6px;
+    height:2px;
+    background:var(--string-color);
+    opacity:0.9;
+    top:50%;
+    transform:translateY(-50%);
+    border-radius:2px;
+  }
+
+  .marker{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:var(--marker-color);
+    opacity:0.12;
+    transition:opacity .18s ease;
+  }
+
+  .highlight{
+    box-shadow:0 0 0 4px rgba(255,235,59,0.12) inset;
+    background: linear-gradient(180deg, var(--highlight), #fff7c2);
+  }
+
+  .highlight .marker{
+    background:var(--marker-color);
+    opacity:1;
+  }
+
+  .correct{
+    background: linear-gradient(180deg, #c8e6c9, #e8f5e9);
+    box-shadow:0 0 0 4px rgba(76,175,80,0.12) inset;
+  }
+
+  .wrong{
+    background: linear-gradient(180deg, #ffcdd2, #ffebee);
+    box-shadow:0 0 0 4px rgba(244,67,54,0.12) inset;
+  }
+
+  .note-label{
+    font-size:12px;
+    font-weight:700;
+    color:#222;
+    opacity:0.9;
+  }
+
+  .controls-row{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-top:8px;
+  }
+
+  .btn{
+    padding:8px 12px;
+    border-radius:8px;
+    border:1px solid rgba(0,0,0,0.06);
+    background:#fff;
+    cursor:pointer;
+    font-weight:600;
+  }
+
+  .btn.primary{
+    background:#1f6feb;
+    color:#fff;
+    border-color:transparent;
+  }
+
+  .keymap{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+
+  .key{
+    padding:8px 10px;
+    border-radius:6px;
+    background:#f3f6fb;
+    border:1px solid rgba(0,0,0,0.04);
+    font-weight:700;
+    min-width:44px;
+    text-align:center;
+  }
+
+  .note-buttons{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    margin-top:8px;
+  }
+
+  .note-btn{
+    padding:8px 10px;
+    border-radius:6px;
+    background:#fff;
+    border:1px solid rgba(0,0,0,0.06);
+    cursor:pointer;
+    font-weight:700;
+  }
+
+  .status{
+    margin-top:8px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    flex-wrap:wrap;
+  }
+
+  .timer-bar{
+    height:8px;
+    background:#eee;
+    border-radius:6px;
+    overflow:hidden;
+    width:220px;
+  }
+
+  .timer-fill{
+    height:100%;
+    background:linear-gradient(90deg,#ffb74d,#ff8a65);
+    width:0%;
+    transition:width .08s linear;
+  }
+
+  .footer{
+    margin-top:14px;
+    font-size:13px;
+    color:#444;
+  }
+
+  /* Piano styles */
+  .piano-wrap{
+    margin-top:12px;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+
+  .piano{
+    position:relative;
+    width:560px;
+    max-width:100%;
+    height:120px;
+    border-radius:8px;
+    background:linear-gradient(180deg,#ddd 0%, #f7f7f7 100%);
+    padding:8px;
+    box-sizing:border-box;
+    box-shadow:0 6px 18px rgba(20,30,60,0.04);
+  }
+
+  .white-keys{
+    display:flex;
+    height:100%;
+    position:relative;
+    z-index:1;
+  }
+
+  .white-key{
+    flex:1 1 auto;
+    border:1px solid #cfcfcf;
+    background:linear-gradient(180deg,#fff 0%, #f6f6f6 100%);
+    height:100%;
+    box-sizing:border-box;
+    position:relative;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    padding-bottom:8px;
+    font-weight:700;
+    color:#222;
+    cursor:pointer;
+    user-select:none;
+  }
+
+  .white-key:active{ background:linear-gradient(180deg,#f0f0f0 0%, #eaeaea 100%); }
+
+  .black-key{
+    position:absolute;
+    width:calc(100% / 12 * 0.6);
+    height:62%;
+    background:#111;
+    top:8px;
+    z-index:2;
+    border-radius:4px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.35);
+    cursor:pointer;
+    color:#fff;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    padding-bottom:8px;
+    font-weight:700;
+    user-select:none;
+  }
+
+  .black-key:active{ transform:translateY(2px); }
+
+  .piano-label{
+    font-size:12px;
+    color:#333;
+    margin-top:6px;
+  }
+
+  /* Popups / overlays */
+  .overlay{
+    position:fixed;
+    left:0; right:0; top:0; bottom:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+    pointer-events:none;
+  }
+
+  .popup{
+    pointer-events:auto;
+    min-width:260px;
+    max-width:92%;
+    background:linear-gradient(180deg,#fff 0%, #f8fff6 100%);
+    border-radius:12px;
+    padding:18px;
+    box-shadow:0 18px 40px rgba(10,20,40,0.18);
+    text-align:center;
+    transform:translateY(12px) scale(.98);
+    opacity:0;
+    animation:popIn .36s cubic-bezier(.2,.9,.3,1) forwards;
+  }
+
+  .popup.big{
+    min-width:360px;
+    background:linear-gradient(180deg,#fff 0%, #e8f7ff 100%);
+  }
+
+  .popup h2{
+    margin:0 0 8px 0;
+    font-size:20px;
+  }
+
+  .popup p{ margin:0 0 12px 0; color:#234; }
+
+  .popup .ok{
+    display:inline-block;
+    padding:8px 14px;
+    border-radius:8px;
+    background:#1f6feb;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    border:none;
+  }
+
+  .popup .secondary{
+    background:#fff;
+    color:#1f6feb;
+    border:1px solid rgba(31,111,235,0.12);
+  }
+
+  @keyframes popIn{
+    from{ transform:translateY(12px) scale(.98); opacity:0; }
+    to{ transform:translateY(0) scale(1); opacity:1; }
+  }
+
+  /* small flying confetti */
+  .confetti {
+    position:absolute;
+    width:8px;
+    height:14px;
+    background:linear-gradient(180deg,#ffb74d,#ff8a65);
+    transform:rotate(15deg);
+    border-radius:2px;
+    opacity:0.95;
+    animation:fall 900ms linear forwards;
+  }
+  @keyframes fall {
+    from { transform: translateY(-20px) rotate(0deg); opacity:1; }
+    to { transform: translateY(120px) rotate(360deg); opacity:0; }
+  }
+
+  /* responsive */
+  @media (max-width:720px){
+    :root{ --fret-width:48px; --fret-height:30px; }
+    .timer-bar{ width:160px; }
+    .piano{ height:96px; }
+  }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div>
+      <h1>Guitar Neck Note Quiz</h1>
+      <div class="small">Identify the highlighted fret's note. Use keyboard, piano, or click note buttons.</div>
+    </div>
+    <div style="margin-left:auto" class="panel">
+      <div><span class="score">Score: <span id="score">0</span></span></div>
+      <div class="small">Level: <strong id="level">1</strong> &nbsp;|&nbsp; Streak: <span id="streak">0</span></div>
+      <div class="small">Round: <span id="round">0</span></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="controls">
+      <div>
+        <strong>Current target:</strong>
+        <div id="target-note" style="font-weight:800; font-size:16px; margin-top:6px">—</div>
+      </div>
+
+      <div style="margin-left:auto">
+        <div class="small">Time to answer (faster = more points)</div>
+        <div class="timer-bar" title="Time left">
+          <div id="timerFill" class="timer-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="neck-wrap">
+      <div id="neck" class="neck" aria-hidden="false"></div>
+    </div>
+
+    <div class="controls-row">
+      <button id="startBtn" class="btn primary">Start</button>
+      <button id="nextBtn" class="btn">Next</button>
+      <button id="resetBtn" class="btn">Reset Score</button>
+      <div style="margin-left:auto" class="small">Wrong allowed per level: <strong>5</strong></div>
+    </div>
+
+    <div class="status">
+      <div class="small">Last result: <span id="lastResult">—</span></div>
+      <div class="small">Elapsed: <span id="elapsed">0</span> ms</div>
+      <div class="small">Incorrect this level: <span id="incorrectCount">0</span></div>
+      <div class="small">Correct this level: <span id="correctCount">0</span></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div class="small"><strong>Keyboard mapping</strong></div>
+      <div class="keymap">
+        <div class="key">a → C</div>
+        <div class="key">s → D</div>
+        <div class="key">d → E</div>
+        <div class="key">f → F</div>
+        <div class="key">g → G</div>
+        <div class="key">h → A</div>
+        <div class="key">j → B</div>
+        <div class="key">w → C#</div>
+        <div class="key">e → D#</div>
+        <div class="key">t → F#</div>
+        <div class="key">y → G#</div>
+        <div class="key">u → A#</div>
+      </div>
+
+      <div style="margin-top:8px" class="small"><strong>Click to answer</strong></div>
+      <div class="note-buttons" id="noteButtons"></div>
+
+      <div class="piano-wrap">
+        <div>
+          <div class="small"><strong>Click piano key</strong></div>
+          <div id="piano" class="piano" aria-hidden="false"></div>
+          <div class="piano-label small">Chromatic octave: C C# D D# E F F# G G# A A# B</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer small">
+      Strings are standard tuning (low to high): <strong>E A D G B E</strong>. Frets shown: 0 (open) to 22.
+    </div>
+  </div>
+
+  <!-- overlay container for popups -->
+  <div id="overlayRoot" class="overlay" aria-hidden="true"></div>
+
+<script>
+/*
+  Guitar Neck Note Quiz with Levels and High Scores
+  - Fret dot markers only on frets: 3,5,7,9,12,15,17,19,21
+  - 6 strings, 23 frets (0..22)
+  - Levels: level N requires N*3 correct answers to progress
+  - If user gets 5 incorrects (wrong or timeout) in a single level => Game Over
+  - On Game Over, store score+level in localStorage if it is a top 10 score
+  - Arcade-style popups for correct answers, level up, and game over
+*/
+
+(() => {
+  /* Constants and UI elements */
+  const STRINGS = 6;
+  const FRETS = 23; // 0..22
+  const chromatic = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const openNotes = ['E','B','G','D','A','E']; // top-to-bottom: high E to low E
+  const keyMap = {
+    'a':'C','s':'D','d':'E','f':'F','g':'G','h':'A','j':'B',
+    'w':'C#','e':'D#','t':'F#','y':'G#','u':'A#'
+  };
+  const markerFrets = [3,5,7,9,12,15,17,19,21];
+  const WRONG_PENALTY = 5;
+  const TIME_LIMIT = 5000;
+  const MAX_POINTS = 100;
+  const MIN_POINTS = 5;
+  const MAX_INCORRECT_PER_LEVEL = 5;
+  const HIGHSCORE_KEY = 'guitar_quiz_highscores_v1';
+
+  // UI refs
+  const neckEl = document.getElementById('neck');
+  const startBtn = document.getElementById('startBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const scoreEl = document.getElementById('score');
+  const streakEl = document.getElementById('streak');
+  const roundEl = document.getElementById('round');
+  const levelEl = document.getElementById('level');
+  const targetNoteEl = document.getElementById('target-note');
+  const lastResultEl = document.getElementById('lastResult');
+  const elapsedEl = document.getElementById('elapsed');
+  const timerFill = document.getElementById('timerFill');
+  const noteButtonsEl = document.getElementById('noteButtons');
+  const pianoEl = document.getElementById('piano');
+  const incorrectCountEl = document.getElementById('incorrectCount');
+  const correctCountEl = document.getElementById('correctCount');
+  const overlayRoot = document.getElementById('overlayRoot');
+
+  // Game state
+  let current = null; // {stringIndex, fret, note}
+  let score = 0;
+  let streak = 0;
+  let round = 0;
+  let running = false;
+  let startTime = 0;
+  let timerInterval = null;
+
+  // Level state
+  let level = 1;
+  let correctThisLevel = 0;
+  let incorrectThisLevel = 0;
+
+  /* Utility functions */
+  function noteFor(stringIndex, fret){
+    const open = openNotes[stringIndex];
+    const openIdx = chromatic.indexOf(open);
+    if (openIdx === -1) return '?';
+    return chromatic[(openIdx + fret) % 12];
+  }
+
+  function randInt(max){ return Math.floor(Math.random()*max); }
+
+  function pickRandom(){
+    const stringIndex = randInt(STRINGS);
+    const fret = randInt(FRETS);
+    return {stringIndex, fret, note: noteFor(stringIndex, fret)};
+  }
+
+  function calculatePoints(elapsed){
+    const clamped = Math.min(elapsed, TIME_LIMIT);
+    const ratio = 1 - (clamped / TIME_LIMIT);
+    const pts = Math.round(MIN_POINTS + (MAX_POINTS - MIN_POINTS) * ratio);
+    return Math.max(MIN_POINTS, pts);
+  }
+
+  /* Build UI: neck, note buttons, piano */
+  function buildNeck(){
+    neckEl.innerHTML = '';
+    for(let f=0; f<FRETS; f++){
+      const fret = document.createElement('div');
+      fret.className = 'fret';
+      const num = document.createElement('div');
+      num.className = 'fret-number';
+      num.textContent = f;
+      fret.appendChild(num);
+
+      const stringsWrap = document.createElement('div');
+      stringsWrap.className = 'strings';
+      for(let s=0; s<STRINGS; s++){
+        const row = document.createElement('div');
+        row.className = 'string-row';
+        const slot = document.createElement('div');
+        slot.className = 'string-slot';
+        slot.dataset.fret = f;
+        slot.dataset.string = s;
+
+        const marker = document.createElement('div');
+        marker.className = 'marker';
+        // show marker only on middle row (s===2) and only for markerFrets
+        if (s === 2 && markerFrets.includes(f)) marker.style.opacity = '0.18';
+        else marker.style.opacity = '0';
+        slot.appendChild(marker);
+
+        const stringLine = document.createElement('div');
+        stringLine.className = 'string-line';
+        slot.appendChild(stringLine);
+
+        if (f === 0){
+          const label = document.createElement('div');
+          label.className = 'note-label';
+          label.style.position = 'absolute';
+          label.style.left = '6px';
+          label.style.top = '6px';
+          label.style.fontSize = '11px';
+          label.textContent = openNotes[s];
+          slot.appendChild(label);
+        }
+
+        row.appendChild(slot);
+        stringsWrap.appendChild(row);
+      }
+      fret.appendChild(stringsWrap);
+      neckEl.appendChild(fret);
+    }
+  }
+
+  function buildNoteButtons(){
+    const notes = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    noteButtonsEl.innerHTML = '';
+    notes.forEach(n=>{
+      const btn = document.createElement('button');
+      btn.className = 'note-btn';
+      btn.textContent = n;
+      btn.title = 'Click to answer ' + n;
+      btn.addEventListener('click', ()=> attemptAnswer(n));
+      noteButtonsEl.appendChild(btn);
+    });
+  }
+
+  function buildPiano(){
+    pianoEl.innerHTML = '';
+    const whiteNotes = ['C','D','E','F','G','A','B'];
+    const blackNotes = ['C#','D#',null,'F#','G#','A#',null];
+    const whiteContainer = document.createElement('div');
+    whiteContainer.className = 'white-keys';
+    whiteNotes.forEach((n, idx) => {
+      const wk = document.createElement('div');
+      wk.className = 'white-key';
+      wk.dataset.note = n;
+      wk.textContent = n;
+      wk.addEventListener('click', ()=> attemptAnswer(n));
+      whiteContainer.appendChild(wk);
+    });
+    pianoEl.appendChild(whiteContainer);
+
+    const whiteCount = whiteNotes.length;
+    const whiteWidthPercent = 100 / whiteCount;
+    const blackWidthPercent = whiteWidthPercent * 0.6;
+    blackNotes.forEach((bn, i) => {
+      if (!bn) return;
+      const bk = document.createElement('div');
+      bk.className = 'black-key';
+      bk.dataset.note = bn;
+      bk.textContent = bn;
+      const left = ( (i + 1) * whiteWidthPercent ) - (blackWidthPercent / 2);
+      bk.style.left = left + '%';
+      bk.style.width = blackWidthPercent + '%';
+      bk.addEventListener('click', (ev)=>{
+        ev.stopPropagation();
+        attemptAnswer(bn);
+      });
+      pianoEl.appendChild(bk);
+    });
+  }
+
+  /* Highlighting and feedback */
+  function clearHighlights(){
+    document.querySelectorAll('.string-slot').forEach(el=>{
+      el.classList.remove('highlight','correct','wrong');
+      const labels = el.querySelectorAll('.note-label');
+      labels.forEach(l => { if (l.dataset && l.dataset.generated === '1') l.remove(); });
+    });
+  }
+
+  function showHighlight(state){
+    clearHighlights();
+    const selector = `.string-slot[data-string="${state.stringIndex}"][data-fret="${state.fret}"]`;
+    const el = document.querySelector(selector);
+    if (el) el.classList.add('highlight');
+  }
+
+  function showFeedback(state, correct){
+    const selector = `.string-slot[data-string="${state.stringIndex}"][data-fret="${state.fret}"]`;
+    const el = document.querySelector(selector);
+    if (!el) return;
+    el.classList.remove('highlight');
+    el.classList.add(correct ? 'correct' : 'wrong');
+
+    const label = document.createElement('div');
+    label.className = 'note-label';
+    label.style.position = 'absolute';
+    label.style.fontSize = '13px';
+    label.style.left = '50%';
+    label.style.top = '50%';
+    label.style.transform = 'translate(-50%,-50%)';
+    label.style.background = 'rgba(255,255,255,0.85)';
+    label.style.padding = '2px 6px';
+    label.style.borderRadius = '6px';
+    label.dataset.generated = '1';
+    label.textContent = state.note;
+    el.appendChild(label);
+  }
+
+  /* Popups and confetti */
+  function showPopup({title='', message='', type='info', big=false, buttons=[] }){
+    // create overlay popup
+    overlayRoot.innerHTML = '';
+    overlayRoot.style.pointerEvents = 'auto';
+    overlayRoot.setAttribute('aria-hidden','false');
+
+    const popup = document.createElement('div');
+    popup.className = 'popup' + (big ? ' big' : '');
+    const h = document.createElement('h2'); h.textContent = title;
+    const p = document.createElement('p'); p.textContent = message;
+    popup.appendChild(h);
+    if (message) popup.appendChild(p);
+
+    const btnRow = document.createElement('div');
+    btnRow.style.display = 'flex';
+    btnRow.style.justifyContent = 'center';
+    btnRow.style.gap = '8px';
+    buttons.forEach(b=>{
+      const btn = document.createElement('button');
+      btn.className = 'ok';
+      if (b.secondary) btn.className = 'ok secondary';
+      btn.textContent = b.label;
+      btn.addEventListener('click', ()=>{
+        overlayRoot.innerHTML = '';
+        overlayRoot.style.pointerEvents = 'none';
+        overlayRoot.setAttribute('aria-hidden','true');
+        if (b.onClick) b.onClick();
+      });
+      btnRow.appendChild(btn);
+    });
+    popup.appendChild(btnRow);
+
+    overlayRoot.appendChild(popup);
+
+    // small confetti for positive types
+    if (type === 'celebrate'){
+      for(let i=0;i<12;i++){
+        const conf = document.createElement('div');
+        conf.className = 'confetti';
+        conf.style.left = (20 + Math.random()*60) + '%';
+        conf.style.background = randomConfettiColor();
+        conf.style.animationDelay = (Math.random()*200) + 'ms';
+        overlayRoot.appendChild(conf);
+      }
+    }
+  }
+
+  function randomConfettiColor(){
+    const colors = ['#ffb74d','#ff8a65','#81c784','#64b5f6','#ba68c8','#ffd54f'];
+    return colors[Math.floor(Math.random()*colors.length)];
+  }
+
+  /* High score storage */
+  function loadHighscores(){
+    try {
+      const raw = localStorage.getItem(HIGHSCORE_KEY);
+      if (!raw) return [];
+      return JSON.parse(raw);
+    } catch(e){ return []; }
+  }
+
+  function saveHighscores(list){
+    try {
+      localStorage.setItem(HIGHSCORE_KEY, JSON.stringify(list));
+    } catch(e){}
+  }
+
+  function trySaveScoreToHighscores(scoreObj){
+    const list = loadHighscores();
+    list.push(scoreObj);
+    // sort by score desc, then level desc, then date asc
+    list.sort((a,b)=> {
+      if (b.score !== a.score) return b.score - a.score;
+      if (b.level !== a.level) return b.level - a.level;
+      return new Date(a.date) - new Date(b.date);
+    });
+    const top = list.slice(0,10);
+    saveHighscores(top);
+    // return whether new score is in top 10 and its rank
+    const rank = top.findIndex(x => x.date === scoreObj.date && x.score === scoreObj.score && x.level === scoreObj.level);
+    return rank >= 0 ? rank+1 : -1;
+  }
+
+  /* Level logic */
+  function requiredCorrectForLevel(lvl){ return lvl * 3; }
+
+  function resetLevelCounters(){
+    correctThisLevel = 0;
+    incorrectThisLevel = 0;
+    correctCountEl.textContent = correctThisLevel;
+    incorrectCountEl.textContent = incorrectThisLevel;
+  }
+
+  function incrementIncorrect(reason){
+    incorrectThisLevel++;
+    incorrectCountEl.textContent = incorrectThisLevel;
+    // show small feedback
+    lastResultEl.textContent = reason + ' (-' + WRONG_PENALTY + ')';
+    // check game over
+    if (incorrectThisLevel >= MAX_INCORRECT_PER_LEVEL){
+      gameOver();
+    }
+  }
+
+  function incrementCorrect(pts){
+    correctThisLevel++;
+    correctCountEl.textContent = correctThisLevel;
+    // level up?
+    if (correctThisLevel >= requiredCorrectForLevel(level)){
+      // level up
+      levelUp();
+    }
+  }
+
+  function levelUp(){
+    level++;
+    levelEl.textContent = level;
+    // reset counters for new level
+    resetLevelCounters();
+    // show celebratory popup
+    showPopup({
+      title: `Level Up!`,
+      message: `Welcome to Level ${level}. You now need ${requiredCorrectForLevel(level)} correct notes to reach the next level.`,
+      type: 'celebrate',
+      big: true,
+      buttons: [
+        { label: 'Keep Playing', onClick: ()=> { startRound(); } }
+      ]
+    });
+  }
+
+  /* Game over */
+  function gameOver(){
+    // stop timers
+    if (timerInterval) clearInterval(timerInterval);
+    running = false;
+    // prepare score object
+    const scoreObj = { score, level, date: new Date().toISOString() };
+    const rank = trySaveScoreToHighscores(scoreObj);
+    // build highscore list for popup
+    const highs = loadHighscores();
+    let listHtml = highs.map((h, i) => `${i+1}. ${h.score} pts — L${h.level} (${new Date(h.date).toLocaleString()})`).join('\n');
+    if (!listHtml) listHtml = 'No highscores yet.';
+    showPopup({
+      title: 'Game Over',
+      message: `You reached Level ${level} with ${score} points.\n${rank>0 ? 'Nice! You made the Top 10 (rank #' + rank + ').' : 'You did not make the Top 10.'}\n\nTop Scores:\n${listHtml}`,
+      type: 'info',
+      big: true,
+      buttons: [
+        { label: 'Play Again', onClick: ()=> { resetGame(); startRound(); } },
+        { label: 'Close', secondary: true, onClick: ()=> { /* just close */ } }
+      ]
+    });
+  }
+
+  /* Start / round / answer handling */
+  function startRound(){
+    if (timerInterval) clearInterval(timerInterval);
+    current = pickRandom();
+    round++;
+    roundEl.textContent = round;
+    targetNoteEl.textContent = '—';
+    showHighlight(current);
+    running = true;
+    startTime = performance.now();
+    lastResultEl.textContent = '—';
+    elapsedEl.textContent = '0';
+    timerFill.style.width = '100%';
+
+    timerInterval = setInterval(()=>{
+      const elapsed = performance.now() - startTime;
+      const pct = Math.max(0, 1 - elapsed / TIME_LIMIT);
+      timerFill.style.width = (pct*100) + '%';
+      if (elapsed >= TIME_LIMIT){
+        clearInterval(timerInterval);
+        running = false;
+        // treat as incorrect (no answer)
+        score -= WRONG_PENALTY;
+        updateUI();
+        incrementIncorrect('Time up');
+        showFeedback(current, false);
+        targetNoteEl.textContent = current.note;
+        // auto next if not game over
+        if (incorrectThisLevel < MAX_INCORRECT_PER_LEVEL){
+          setTimeout(()=> startRound(), 900);
+        }
+      }
+    }, 30);
+  }
+
+  function attemptAnswer(noteName){
+    if (!current || !running) return;
+    const elapsed = Math.round(performance.now() - startTime);
+    elapsedEl.textContent = elapsed;
+    clearInterval(timerInterval);
+    running = false;
+
+    const correct = (noteName === current.note);
+    if (correct){
+      const pts = calculatePoints(elapsed);
+      score += pts;
+      streak++;
+      lastResultEl.textContent = `Correct +${pts}`;
+      showFeedback(current, true);
+      targetNoteEl.textContent = current.note;
+      updateUI();
+      // show small celebratory popup
+      showPopup({
+        title: 'Nice!',
+        message: `+${pts} points`,
+        type: 'celebrate',
+        big: false,
+        buttons: [
+          { label: 'OK', onClick: ()=> { /* continue */ } }
+        ]
+      });
+      incrementCorrect();
+    } else {
+      score -= WRONG_PENALTY;
+      streak = 0;
+      lastResultEl.textContent = `Wrong -${WRONG_PENALTY} (was ${current.note})`;
+      showFeedback(current, false);
+      targetNoteEl.textContent = current.note;
+      updateUI();
+      incrementIncorrect('Wrong');
+    }
+
+    // if not game over and still running false, auto next after short delay
+    if (incorrectThisLevel < MAX_INCORRECT_PER_LEVEL){
+      setTimeout(()=> {
+        // only start next if not in popup overlay (overlayRoot pointer-events)
+        if (overlayRoot.innerHTML.trim() === '') startRound();
+      }, 900);
+    }
+  }
+
+  /* UI updates */
+  function updateUI(){
+    scoreEl.textContent = score;
+    streakEl.textContent = streak;
+    levelEl.textContent = level;
+    correctCountEl.textContent = correctThisLevel;
+    incorrectCountEl.textContent = incorrectThisLevel;
+    roundEl.textContent = round;
+  }
+
+  /* Reset / init */
+  function resetGame(){
+    score = 0;
+    streak = 0;
+    round = 0;
+    level = 1;
+    resetLevelCounters();
+    updateUI();
+    clearHighlights();
+    targetNoteEl.textContent = '—';
+    lastResultEl.textContent = 'Ready';
+    if (timerInterval) clearInterval(timerInterval);
+    running = false;
+  }
+
+  /* Keyboard handling */
+  function onKey(e){
+    const k = e.key.toLowerCase();
+    if (keyMap[k]){
+      attemptAnswer(keyMap[k]);
+    }
+    if (k === ' '){
+      e.preventDefault();
+      if (!running) startRound();
+    }
+  }
+
+  /* Click on neck reveals note (exploration) */
+  neckEl.addEventListener('click', (ev)=>{
+    const slot = ev.target.closest('.string-slot');
+    if (!slot) return;
+    const s = parseInt(slot.dataset.string,10);
+    const f = parseInt(slot.dataset.fret,10);
+    const note = noteFor(s,f);
+    clearInterval(timerInterval);
+    running = false;
+    showFeedback({stringIndex:s,fret:f,note}, false);
+    targetNoteEl.textContent = note;
+    lastResultEl.textContent = `Revealed ${note}`;
+    setTimeout(()=> {
+      clearHighlights();
+      targetNoteEl.textContent = '—';
+      lastResultEl.textContent = '—';
+    }, 900);
+  });
+
+  /* Button handlers */
+  startBtn.addEventListener('click', ()=> {
+    if (!running) startRound();
+  });
+
+  nextBtn.addEventListener('click', ()=>{
+    if (running){
+      clearInterval(timerInterval);
+      running = false;
+      // skipping counts as incorrect
+      score -= WRONG_PENALTY;
+      updateUI();
+      incrementIncorrect('Skipped');
+      showFeedback(current, false);
+      targetNoteEl.textContent = current.note;
+      if (incorrectThisLevel < MAX_INCORRECT_PER_LEVEL){
+        setTimeout(()=> startRound(), 900);
+      }
+    } else {
+      startRound();
+    }
+  });
+
+  resetBtn.addEventListener('click', ()=>{
+    resetGame();
+    // also clear highscores if user holds shift (convenience)
+    if (confirm('Reset game. Do you also want to clear top scores? (OK to clear, Cancel to keep)')){
+      localStorage.removeItem(HIGHSCORE_KEY);
+      alert('Top scores cleared.');
+    }
+  });
+
+  /* Prevent accidental selection while playing */
+  document.addEventListener('selectstart', e => {
+    if (running) e.preventDefault();
+  });
+
+  /* Initialization */
+  buildNeck();
+  buildNoteButtons();
+  buildPiano();
+  resetGame();
+  updateUI();
+  window.addEventListener('keydown', onKey);
+
+  // show a welcome popup with level rules
+  setTimeout(()=> {
+    showPopup({
+      title: 'Welcome to the Guitar Quiz',
+      message: `Levels: each level requires ${requiredCorrectForLevel(1)} then ${requiredCorrectForLevel(2)} then ${requiredCorrectForLevel(3)} correct notes (each level increases by 3).\nYou get 5 incorrects per level before Game Over. Good luck!`,
+      type: 'info',
+      big: true,
+      buttons: [
+        { label: 'Start Playing', onClick: ()=> { startRound(); } }
+      ]
+    });
+  }, 300);
+
+  console.log('Guitar Quiz (levels) ready.');
+})();
+</script>
+</body>
+</html>
