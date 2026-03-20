@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Visual Pro Player</title>
+    <style>
+        body { 
+            font-family: sans-serif; background: #000; color: white; 
+            display: flex; flex-direction: column; align-items: center; 
+            padding: 10px; margin: 0; height: 100vh; overflow-x: hidden;
+        }
+
+        #bgVisualizer {
+            position: fixed; top: -150px; left: 0; width: 100vw; height: 100vh;
+            z-index: -1; opacity: 1;
+        }
+
+        .container { 
+            width: 95%; max-width: 400px; max-height: 900px; text-align: center; z-index: 10;
+            background: rgba(20, 20, 20, 0.85); padding: 15px;
+            border-radius: 15px; backdrop-filter: blur(5px); border: 1px solid #333;
+        }
+
+        .now-playing { margin: 10px 0; color: #1db954; font-weight: bold; font-size: 14px; height: 1.2em; overflow: hidden; }
+
+        /* Frequency Meter */
+        #freqMeter { width: 100%; height: 60px; background: #000; border-radius: 5px; margin-bottom: 10px; border: 1px solid #222; }
+
+        /* Sliders */
+        .slider-group { margin: 10px 0; }
+        input[type="range"] { width: 100%; cursor: pointer; accent-color: #1db954; height: 8px; }
+        .label-text { font-size: 12px; color: #888; display: flex; justify-content: space-between; margin-bottom: 4px; }
+
+        input[type="file"] { margin: 10px 0; color: #bbb; font-size: 12px; width: 100%; }
+        
+        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        button { 
+            padding: 12px 5px; font-size: 13px; cursor: pointer; border-radius: 8px; 
+            border: none; background: #1db954; color: white; font-weight: bold;
+        }
+        button.secondary { background: #444; }
+        button:active { transform: scale(0.95); }
+
+        #playlist { 
+            text-align: left; list-style: none; padding: 0; 
+            max-height: 150px; overflow-y: auto; border-top: 1px solid #333;
+        }
+        #playlist li { padding: 8px; border-bottom: 1px solid #222; font-size: 12px; color: #ccc; }
+        #playlist li.active { color: #1db954; background: rgba(29, 185, 84, 0.1); }
+    </style>
+</head>
+<body>
+
+<table width="100%">
+<tr>
+<td width="30%">
+	<div class="container">
+		<div class="now-playing" id="trackTitle">Select Music</div>
+		
+		<canvas id="freqMeter"></canvas>
+
+		<div class="slider-group">
+			<div class="label-text">
+				<span id="currentTime">0:00</span>
+				<span id="remainingTime">-0:00</span>
+			</div>
+			<input type="range" id="progressBar" value="0" step="0.1">
+		</div>
+
+		<div class="slider-group">
+			<div class="label-text"><span>Volume</span></div>
+			<input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.7">
+		</div>
+
+		<input type="file" id="fileInput" accept="audio/*" multiple>
+
+		<div class="controls">
+			<button onclick="prevTrack()">Prev</button>
+			<button id="playBtn" onclick="togglePlay()">Play</button>
+			<button onclick="nextTrack()">Next</button>
+			<button class="secondary" onclick="stopTrack()">Stop</button>
+			<button id="shuffleBtn" class="secondary" onclick="toggleShuffle()">Shuffle Off</button>
+			<button class="secondary" onclick="playlistUl.innerHTML='' ">Clear</button>
+		</div>
+
+		<ul id="playlist"></ul>
+	</div>
+</td>
+<td width="70%">
+	<canvas id="bgVisualizer"></canvas>
+</td>
+</tr>
+</table>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const audio = document.getElementById('audioPlayer') || new Audio();
+    const playlistUl = document.getElementById('playlist');
+    const trackTitle = document.getElementById('trackTitle');
+    const playBtn = document.getElementById('playBtn');
+    const progressBar = document.getElementById('progressBar');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const currentTimeSpan = document.getElementById('currentTime');
+    const bgCanvas = document.getElementById('bgVisualizer');
+    const fgCanvas = document.getElementById('freqMeter');
+    
+    let playlist = [];
+    let currentIndex = 0;
+    let isShuffle = false;
+    let audioContext, analyser, source, dataArray;
+
+    // File Loading
+    fileInput.addEventListener('change', (e) => {
+        playlist = Array.from(e.target.files);
+        renderPlaylist();
+        if (playlist.length > 0) loadTrack(0);
+    });
+
+    function renderPlaylist() {
+        playlistUl.innerHTML = '';
+        playlist.forEach((file, index) => {
+            const li = document.createElement('li');
+            li.textContent = (index + 1) + ". " + file.name;
+            li.className = (index === currentIndex) ? 'active' : '';
+            li.onclick = () => loadTrack(index);
+            playlistUl.appendChild(li);
+        });
+    }
+
+    function loadTrack(index) {
+        currentIndex = index;
+        const file = playlist[index];
+        audio.src = URL.createObjectURL(file);
+        trackTitle.textContent = file.name;
+        renderPlaylist();
+        audio.play();
+        playBtn.textContent = "Pause";
+        initAudio();
+    }
+
+    // Audio Logic
+    function togglePlay() {
+        initAudio();
+        if (audio.paused) { audio.play(); playBtn.textContent = "Pause"; }
+        else { audio.pause(); playBtn.textContent = "Play"; }
+    }
+
+    function stopTrack() {
+		audio.pause();
+		audio.currentTime = 0;
+		playBtn.textContent = "Play";
+	}
+
+    function nextTrack() {
+        if (isShuffle) {
+            loadTrack(Math.floor(Math.random() * playlist.length));
+        } else if (currentIndex < playlist.length - 1) {
+            loadTrack(currentIndex + 1);
+        }
+    }
+
+    function prevTrack() {
+        if (currentIndex > 0) loadTrack(currentIndex - 1);
+    }
+
+    function toggleShuffle() {
+        isShuffle = !isShuffle;
+        document.getElementById('shuffleBtn').textContent = isShuffle ? "Shuffle ON" : "Shuffle Off";
+        document.getElementById('shuffleBtn').style.color = isShuffle ? "#1db954" : "#fff";
+    }
+
+    // Volume & Progress
+    volumeSlider.addEventListener('input', (e) => audio.volume = e.target.value);
+    audio.addEventListener('timeupdate', () => {
+		if (!isNaN(audio.duration)) {
+			// Update the slider position
+			progressBar.value = (audio.currentTime / audio.duration) * 100;
+			
+			// Calculate Current Time (Left Side)
+			const curMins = Math.floor(audio.currentTime / 60);
+			const curSecs = Math.floor(audio.currentTime % 60);
+			currentTimeSpan.textContent = `${curMins}:${curSecs < 10 ? '0' : ''}${curSecs}`;
+			
+			// Calculate Remaining Time (Right Side)
+			const timeLeft = audio.duration - audio.currentTime;
+			const remMins = Math.floor(timeLeft / 60);
+			const remSecs = Math.floor(timeLeft % 60);
+			document.getElementById('remainingTime').textContent = `-${remMins}:${remSecs < 10 ? '0' : ''}${remSecs}`;
+		}
+	});
+    progressBar.addEventListener('input', () => audio.currentTime = audio.duration * (progressBar.value / 100));
+    audio.addEventListener('ended', nextTrack);
+
+    // Visualizer Setup
+    function initAudio() {
+        if (audioContext) { if (audioContext.state === 'suspended') audioContext.resume(); return; }
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        source = audioContext.createMediaElementSource(audio);
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+        analyser.fftSize = 256;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+        draw();
+    }
+
+    function draw() {
+        requestAnimationFrame(draw);
+        analyser.getByteFrequencyData(dataArray);
+
+        // 1. Background Visualizer (Polygons)
+        bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight;
+        const bCtx = bgCanvas.getContext('2d');
+        const bCenterX = bgCanvas.width / 2;
+        const bCenterY = bgCanvas.height / 2;
+        let avg = dataArray.reduce((a,b) => a+b)/dataArray.length;
+        
+        bCtx.beginPath();
+        let radius = 100 + avg;
+        for(let i=0; i<=6; i++){
+            let angle = (i * 2 * Math.PI / 6) + (avg/100);
+            let x = bCenterX + radius * Math.cos(angle);
+            let y = bCenterY + radius * Math.sin(angle);
+            if(i===0) bCtx.moveTo(x,y); else bCtx.lineTo(x,y);
+        }
+        bCtx.strokeStyle = `hsla(${(Date.now()/50)%360}, 100%, 50%, 0.5)`;
+        bCtx.lineWidth = 10; bCtx.stroke();
+
+        // 2. Foreground Frequency Meter (Bars)
+        fgCanvas.width = fgCanvas.clientWidth; fgCanvas.height = fgCanvas.clientHeight;
+        const fCtx = fgCanvas.getContext('2d');
+        const barWidth = (fgCanvas.width / dataArray.length) * 2.5;
+        let x = 0;
+        for(let i=0; i<dataArray.length; i++) {
+            let barHeight = (dataArray[i] / 255) * fgCanvas.height;
+            fCtx.fillStyle = `hsl(${(i * 2)}, 100%, 50%)`;
+            fCtx.fillRect(x, fgCanvas.height - barHeight, barWidth, barHeight);
+            x += barWidth + 1;
+        }
+    }
+</script>
+</body>
+</html>
