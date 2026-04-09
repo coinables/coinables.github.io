@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Minimal Guitar Tab Creator</title>
+<style>
+    body { 
+        font-family: Arial, sans-serif; 
+        margin: 20px; 
+        background: #f8f8f8; 
+    }
+    h1 { text-align: center; }
+    .instructions { 
+        text-align: center; 
+        margin: 10px 0; 
+        font-size: 1.1em; 
+        color: #333; 
+    }
+    .controls { 
+        text-align: center; 
+        margin: 15px 0; 
+        display: flex; 
+        justify-content: center; 
+        flex-wrap: wrap; 
+        gap: 10px; 
+        align-items: center;
+    }
+    button, input[type="number"] { 
+        padding: 8px 12px; 
+        font-size: 1em; 
+        cursor: pointer; 
+    }
+    input[type="number"] { width: 80px; text-align: center; }
+    
+    .staff {
+        margin: 30px auto;
+        max-width: 100%;
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+    .tab-grid {
+        margin: 0 auto;
+        border-collapse: collapse;
+        font-family: 'Courier New', monospace;
+        font-size: 20px;
+        background: white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .string-label {
+        text-align: right;
+        padding: 4px 12px 4px 8px;
+        font-weight: bold;
+        border-right: 3px solid #222;
+        border-bottom: 4px solid #222;
+        min-width: 50px;
+    }
+    .fret-cell {
+        text-align: center;
+        padding: 6px 10px;
+        min-width: 32px;
+        border-bottom: 4px solid #222;
+        border-right: 1px dashed #bbb;
+        cursor: pointer;
+    }
+    .bar-line {
+        border-right: 3px solid #222 !important;
+    }
+    .fret-cell:last-child { border-right: none; }
+    .selected {
+        background-color: #fffb8f !important;
+        box-shadow: inset 0 0 0 4px #0066ff;
+    }
+    .staff-separator {
+        height: 30px;
+        background: transparent;
+    }
+</style>
+</head>
+<body>
+
+<h1>Minimal Guitar Tab Creator</h1>
+<div class="instructions">
+    ↑↓ arrows = change strings  ←→ arrows = move notes (across staffs)<br>
+    Type numbers 0-9 or symbols (~ / \ h p b) directly<br>
+    Backspace = delete last character  Delete = clear cell
+</div>
+
+<div class="controls">
+    <button onclick="addColumn()">Add Column</button>
+    <button onclick="insertColumn()">Insert at Cursor</button>
+    <button onclick="deleteColumn()">Delete Column at Cursor</button>
+    <button onclick="addStaff()">Add New Staff</button>
+    
+    <label>Bar every 
+        <input type="number" id="barEvery" value="8" min="1" max="16" onchange="changeBarInterval()">
+    </label>
+    
+    <button onclick="copyCurrentStaff()">Export Current Staff</button>
+    <button onclick="copyAllTabs()">Export All Staffs</button>
+    <button onclick="clearAll()">Clear All</button>
+</div>
+
+<div id="tab-container"></div>
+
+<script>
+const stringNames = ['e', 'B', 'G', 'D', 'A', 'E'];
+let staffs = [
+    { data: Array.from({ length: 6 }, () => Array(32).fill('-')) }
+];
+
+let currentStaffIndex = 0;
+let currentRow = 2;
+let currentCol = 0;
+let barEvery = 8;
+
+function getNumCols() {
+    return staffs[0] ? staffs[0].data[0].length : 32;
+}
+
+function shouldDrawBarAfter(col) {
+    return (col + 1) % barEvery === 0;
+}
+
+function renderAll() {
+    const container = document.getElementById('tab-container');
+    container.innerHTML = '';
+
+    staffs.forEach((staff, staffIdx) => {
+        let html = `<div class="staff">`;
+        html += `<table class="tab-grid"><tbody>`;
+        
+        for (let r = 0; r < 6; r++) {
+            html += `<tr>`;
+            html += `<td class="string-label">${stringNames[r]} |</td>`;
+            
+            for (let c = 0; c < staff.data[r].length; c++) {
+                const content = staff.data[r][c];
+                const isSelected = (staffIdx === currentStaffIndex && r === currentRow && c === currentCol);
+                let classes = 'fret-cell';
+                if (isSelected) classes += ' selected';
+                if (shouldDrawBarAfter(c)) classes += ' bar-line';
+                
+                html += `<td class="${classes}" onclick="selectCell(${staffIdx},${r},${c})">${content}</td>`;
+            }
+            html += `</tr>`;
+        }
+        html += `</tbody></table></div>`;
+        
+        if (staffIdx < staffs.length - 1) {
+            html += `<div class="staff-separator"></div>`;
+        }
+        
+        container.innerHTML += html;
+    });
+}
+
+function selectCell(staffIdx, r, c) {
+    currentStaffIndex = staffIdx;
+    currentRow = r;
+    currentCol = c;
+    renderAll();
+}
+
+// Column & Staff functions
+function addColumn() { staffs.forEach(staff => staff.data.forEach(row => row.push('-'))); renderAll(); }
+function insertColumn() { staffs.forEach(staff => staff.data.forEach(row => row.splice(currentCol, 0, '-'))); renderAll(); }
+function deleteColumn() {
+    const numCols = getNumCols();
+    if (numCols <= 1) return;
+    staffs.forEach(staff => staff.data.forEach(row => row.splice(currentCol, 1)));
+    if (currentCol >= numCols - 1) currentCol = numCols - 2;
+    renderAll();
+}
+function addStaff() {
+    const newStaff = { data: Array.from({ length: 6 }, () => Array(getNumCols()).fill('-')) };
+    staffs.push(newStaff);
+    currentStaffIndex = staffs.length - 1;
+    currentCol = 0;
+    renderAll();
+}
+function changeBarInterval() {
+    const val = parseInt(document.getElementById('barEvery').value);
+    if (val && val > 0 && val <= 16) {
+        barEvery = val;
+        renderAll();
+    }
+}
+
+// ==================== FIXED ALIGNED EXPORT ====================
+
+function getCellWidth(cell) {
+    if (cell === '-') return 1;
+    return cell.length;           // 1 for single digit, 2 for 10-24 or "15p" etc.
+}
+
+function formatStaffForText(staff) {
+    const numCols = staff.data[0].length;
+    let lines = [];
+    
+    // For each column, find the maximum width needed across all 6 strings
+    const colWidths = new Array(numCols).fill(0);
+    for (let c = 0; c < numCols; c++) {
+        for (let r = 0; r < 6; r++) {
+            colWidths[c] = Math.max(colWidths[c], getCellWidth(staff.data[r][c]));
+        }
+    }
+    
+    for (let r = 0; r < 6; r++) {
+        let line = stringNames[r] + ' |';
+        for (let c = 0; c < numCols; c++) {
+            let cell = staff.data[r][c];
+            if (cell === '-') cell = '-';
+            const width = colWidths[c];
+            line += cell.padEnd(width, '-');
+            
+            // Add bar line if needed
+            if (shouldDrawBarAfter(c)) {
+                line += '|';
+            } else {
+                line += '-';   // separator between columns
+            }
+        }
+        lines.push(line);
+    }
+    return lines.join('\n');
+}
+
+function copyCurrentStaff() {
+    const staff = staffs[currentStaffIndex];
+    const text = formatStaffForText(staff);
+    navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Current staff copied with proper alignment!');
+    });
+}
+
+function copyAllTabs() {
+    let output = '';
+    staffs.forEach((staff, idx) => {
+        if (idx > 0) output += '\n\n';
+        output += formatStaffForText(staff);
+    });
+    
+    navigator.clipboard.writeText(output).then(() => {
+        alert(`✅ Copied all ${staffs.length} staff(s) with proper alignment!`);
+    });
+}
+
+function clearAll() {
+    if (confirm('Clear ALL staffs and start over?')) {
+        staffs = [{ data: Array.from({ length: 6 }, () => Array(32).fill('-')) }];
+        currentStaffIndex = 0;
+        currentRow = 2;
+        currentCol = 0;
+        renderAll();
+    }
+}
+
+// Keyboard controls (same as before)
+document.addEventListener('keydown', e => {
+    const currentStaff = staffs[currentStaffIndex];
+    const numCols = currentStaff.data[0].length;
+
+    if (e.key === 'ArrowRight') {
+        if (currentCol < numCols - 1) currentCol++;
+        else if (currentStaffIndex < staffs.length - 1) {
+            currentStaffIndex++;
+            currentCol = 0;
+        }
+        renderAll();
+        e.preventDefault();
+    } else if (e.key === 'ArrowLeft') {
+        if (currentCol > 0) currentCol--;
+        else if (currentStaffIndex > 0) {
+            currentStaffIndex--;
+            currentCol = staffs[currentStaffIndex].data[0].length - 1;
+        }
+        renderAll();
+        e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+        if (currentRow > 0) currentRow--;
+        renderAll();
+        e.preventDefault();
+    } else if (e.key === 'ArrowDown') {
+        if (currentRow < 5) currentRow++;
+        renderAll();
+        e.preventDefault();
+    } else if (e.key === 'Backspace') {
+        let val = currentStaff.data[currentRow][currentCol];
+        currentStaff.data[currentRow][currentCol] = (val.length > 1 && val !== '-') ? val.slice(0, -1) : '-';
+        renderAll();
+        e.preventDefault();
+    } else if (e.key === 'Delete') {
+        currentStaff.data[currentRow][currentCol] = '-';
+        renderAll();
+        e.preventDefault();
+    } else {
+        const key = e.key;
+        const allowed = '0123456789~/\\hpb- ';
+        if (allowed.includes(key) || allowed.includes(key.toLowerCase())) {
+            let char = (key === ' ') ? '-' : key;
+            let current = currentStaff.data[currentRow][currentCol];
+            if (current === '-') current = '';
+            currentStaff.data[currentRow][currentCol] = (current + char).slice(0, 5);
+            renderAll();
+            e.preventDefault();
+        }
+    }
+});
+
+window.onload = () => {
+    document.getElementById('barEvery').value = barEvery;
+    renderAll();
+};
+</script>
+</body>
+</html>
